@@ -16,9 +16,32 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Arc displays (local only)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+These pages drive the physical arc screens and read from the local filesystem — **never deploy them**. See `SPEC.md` for the full design.
+
+- **`/live`** — the 1280×256 top bar: sponsor strip + shoulders with the live athlete feed in the bottom-center. Press **S** for the setup drawer (file picker, split thresholds, polling).
+- **`/clock`** — the 320×64 race-clock counter. Press **C** for controls (start / pause / reset / set).
+
+### Configuration
+
+Copy `.env.example` to `.env.local` and set `FEED_DIR` to the absolute path of the folder containing the timing backend's `.txt` feed file(s):
+
+```bash
+FEED_DIR=C:\path\to\timing\feeds
+```
+
+Each feed line is `BIB FIRSTNAME LASTNAME TIME`, where `TIME` is cumulative race time (`H:MM:SS` or `MM:SS`). The split (Swim/Bike/Run) is inferred from that time against the thresholds set in the setup drawer.
+
+### Commands
+
+```bash
+pnpm dev        # dev server
+pnpm build      # production build
+pnpm lint       # eslint
+pnpm typecheck  # tsc --noEmit
+pnpm test       # vitest (pure-logic unit tests)
+```
 
 ## Learn More
 

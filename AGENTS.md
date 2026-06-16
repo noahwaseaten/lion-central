@@ -4,21 +4,45 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Lion Heart Ultra - Internal Staff App System Specs & Core Guidelines
+# Project: [Lion Central] Arc Control & Live Feed App
 
-## Tech Stack & Styling Constraints
-* **Framework:** Next.js (App Router), TypeScript, Tailwind CSS.
-* **UI Foundation:** Strictly use components initialized by the Shadcn UI preset via the pointer: `pnpm dlx shadcn@latest init --preset b2BVA82Vs --base base --template next --pointer`.
-* **Tokens:** Rely entirely on semantic design tokens (`bg-primary`, `bg-card`, `text-muted-foreground`). Never introduce arbitrary hex values or custom colors.
-* **Ergonomics:** Minimum touch target sizes for all interactive elements must be $44 \times 44\text{px}$ to facilitate fast, high-stress mobile usage outdoors.
+## Stack
+- Next.js (App Router), TypeScript, pnpm
+- shadcn/ui (preset: b2BVA82Vs, base theme, pointer variant)
+- Tailwind CSS
 
-## Core Feature: Award Ceremony Management
-* **Purpose:** Replace the complex Google Sheet system for the Lion Heart Ultra award ceremony with a secure, private, error-proof verification pipeline.
-* **Audience:** Core organizers, team members, and volunteers on-site.
-* **Hierarchy:** Event Segment (Ultra/Relay) -> Division/Gender -> Age Bracket -> Podium Rank (1st, 2nd, 3rd).
-* **Workflow Lifecycle:** Every category card must progress cleanly through explicit states: `[ UNCONFIRMED ]` -> `[ CONFIRMED ]` -> `[ AWARDED ]`. Include logistics checklist states (`[ Medal Given ]`, `[ Gift Bag Handed Out ]`).
+## Commands
+- `pnpm dev` — start dev server
+- `pnpm build` — production build
+- `pnpm lint` — lint check
+- `pnpm typecheck` — type check (run after changes)
 
-## Network Resilience (Offline-First)
-* **Status Monitoring:** The app must track `navigator.onLine`. If connection drops, display a high-contrast sticky indicator warning staff that changes are caching locally.
-* **Optimistic Updates:** UI must assume server success instantly.
-* **Local Persistence:** Form inputs and status updates must immediately write to browser storage (`IndexedDB` or `LocalStorage`) so data is never lost if a cell signal drops mid-action.
+## Architecture
+- App is private/internal — no public auth, no monetization
+- Live feed page is LOCAL ONLY — reads a .txt file from local filesystem, never deployed to production
+- Arc control page will communicate with the digital arc hardware/software
+
+## Design Rules (NON-NEGOTIABLE)
+- Consistent across all pages: same spacing scale, same color tokens, same component variants
+- Simple and intuitive — no decorative complexity
+- Every interactive element must have: hover, focus, loading, and error states
+- Offline-first awareness: show offline banner when no connection, disable network actions gracefully
+- Use shadcn components as the base — do not reinvent UI primitives
+
+## Live Feed Feature
+- Reads last 3 lines of a local .txt file
+- Format per line: `BIB FIRSTNAME LASTNAME TIME`
+- This is a triathlon — splits are Swim, Bike, Run (affects time label shown)
+- Animate entries: new arrivals slide/fade in, smooth transitions
+- Visual variation based on split type or other factors
+
+## Code Style
+- TypeScript strict mode
+- Named exports, no default exports except pages
+- Components in /components, pages in /app
+- No inline styles — Tailwind only
+- Keep components small and focused
+
+## Git
+- Branch per feature: `feature/live-feed`, `feature/arc-control`
+- Commit per logical change, not per file
