@@ -28,6 +28,8 @@ interface TickerState {
   newestId: string | null;
   /** When the current one-row glide began (0 = settled, nothing animating). */
   glideStart: number;
+  /** How many rows the current glide moves (1 normally; a batch on simultaneous arrivals). */
+  shiftRows: number;
 }
 
 const states = new WeakMap<HTMLCanvasElement, Map<string, TickerState>>();
@@ -40,7 +42,7 @@ function stateFor(canvas: HTMLCanvasElement, key: string): TickerState {
   }
   let st = perCanvas.get(key);
   if (!st) {
-    st = { order: [], byId: new Map(), firstSeen: new Map(), newestId: null, glideStart: 0 };
+    st = { order: [], byId: new Map(), firstSeen: new Map(), newestId: null, glideStart: 0, shiftRows: 0 };
     perCanvas.set(key, st);
   }
   return st;
@@ -106,48 +108,44 @@ export function tickerRows(
   const n = st.order.length;
   if (n === 0) return [];
 
-  // A change in the newest id means the file gained a line — start one glide.
+  // A change in the newest id means the file gained one or more lines.
   const newest = st.order[n - 1];
   if (newest !== st.newestId) {
+    const prevIdx = st.newestId ? st.order.indexOf(st.newestId) : -1;
+    // How many genuinely-new ids arrived since the last settled newest. On first
+    // sight (or if the previous newest scrolled out of history), treat all as new.
+    const newCount = prevIdx >= 0 ? n - 1 - prevIdx : n;
     st.newestId = newest;
     st.glideStart = now;
+    st.shiftRows = Math.max(1, newCount);
   }
 
+  // A burst bigger than the window snaps instantly (no glide); otherwise ease.
+  const snap = st.shiftRows > rows;
   const p =
-    prefersReducedMotion() || st.glideStart === 0
+    prefersReducedMotion() || st.glideStart === 0 || snap
       ? 1
       : easeInOut(clamp01((now - st.glideStart) / TRANSITION_MS));
 
   const rowH = h / rows;
-  const shift = (1 - p) * rowH; // whole column starts one row lower, rises to rest
+  const shift = (1 - p) * st.shiftRows * rowH; // column starts shiftRows lower, rises to rest
   const count = Math.min(n, rows);
+  const extra = p < 1 ? Math.min(st.shiftRows, n - count) : 0; // rows leaving off the top
+  const firstNewIdx = n - st.shiftRows; // ids at/after this index are the new arrivals
   const freshOf = (id: string) => clamp01(1 - (now - (st.firstSeen.get(id) ?? now)) / FRESH_MS);
 
   const out: TickerRow[] = [];
-
-  // The row leaving off the top (only when there's more history than slots).
-  if (n > rows && p < 1) {
-    const id = st.order[n - count - 1];
-    out.push({
-      entry: st.byId.get(id)!,
-      y: -p * rowH,
-      alpha: clamp01(1 - p),
-      fresh: freshOf(id),
-    });
-  }
-
-  // The visible window, newest at the bottom.
-  for (let k = 0; k < count; k++) {
-    const idx = n - count + k;
+  const rendered = count + extra;
+  for (let r = 0; r < rendered; r++) {
+    const idx = n - rendered + r;
+    if (idx < 0) continue;
     const id = st.order[idx];
-    const slot = rows - count + k;
-    const isNewest = idx === n - 1;
-    out.push({
-      entry: st.byId.get(id)!,
-      y: slot * rowH + shift,
-      alpha: isNewest ? clamp01(p) : 1,
-      fresh: freshOf(id),
-    });
+    const entry = st.byId.get(id);
+    if (!entry) continue;
+    const slot = rows - count + (r - extra); // negative slots are leaving rows above the top
+    const incoming = idx >= firstNewIdx; // a just-arrived row fades in
+    const alpha = slot < 0 ? clamp01(1 - p) : incoming ? clamp01(p) : 1;
+    out.push({ entry, y: slot * rowH + shift, alpha, fresh: freshOf(id) });
   }
 
   return out;
