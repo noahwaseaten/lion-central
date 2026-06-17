@@ -7,6 +7,8 @@ import { useSurfaceCanvas } from "@/hooks/use-surface-canvas";
 import { getSurface, type SurfaceId } from "@/lib/arc/surfaces";
 
 import { ScaleToFit } from "./scale-to-fit";
+import { SurfaceClockOverlay } from "./surface-clock-overlay";
+import { OutputGuides } from "./output-guides";
 
 /**
  * Clean, full-screen render of a single arc surface at native resolution,
@@ -23,7 +25,16 @@ export function SurfaceOutput({ surfaceId }: { surfaceId: SurfaceId }) {
 
   return (
     <ScaleToFit width={surface.w} height={surface.h}>
-      <canvas ref={ref} className="block h-full w-full" />
+      <div className="relative h-full w-full">
+        <canvas ref={ref} className="block h-full w-full" />
+        <SurfaceClockOverlay
+          surfaceId={surfaceId}
+          inputs={inputs}
+          displayW={surface.w}
+          displayH={surface.h}
+        />
+        <OutputGuides label={surface.label} w={surface.w} h={surface.h} />
+      </div>
     </ScaleToFit>
   );
 }
