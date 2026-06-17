@@ -1,0 +1,159 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - img "Lion Heart" [ref=e5]
+        - generic [ref=e7]: Arc Control
+      - button "Outputs" [ref=e9] [cursor=pointer]:
+        - img
+        - text: Outputs
+        - img
+      - generic [ref=e10]:
+        - generic "Race clock" [ref=e12]: 00:00
+        - button "Start clock" [ref=e14] [cursor=pointer]:
+          - img
+        - button "Reset clock" [ref=e15] [cursor=pointer]:
+          - img
+      - generic [ref=e16]:
+        - button "Append a random athlete line to the feed" [disabled]:
+          - img
+          - text: Test line
+        - generic [ref=e17]:
+          - img [ref=e18]
+          - text: Connecting
+        - button "Arc appearance" [ref=e21] [cursor=pointer]:
+          - img
+    - generic [ref=e22]:
+      - complementary [ref=e23]:
+        - navigation "Zones" [ref=e24]:
+          - generic [ref=e25]:
+            - heading "Clock (top)" [level=2] [ref=e26]
+            - list [ref=e27]:
+              - listitem [ref=e28]:
+                - button "Race clock" [ref=e29] [cursor=pointer]:
+                  - generic [ref=e31]: Race clock
+                  - img [ref=e32]
+          - generic [ref=e34]:
+            - heading "Top bar" [level=2] [ref=e35]
+            - list [ref=e36]:
+              - listitem [ref=e37]:
+                - button "Left shoulder" [ref=e38] [cursor=pointer]:
+                  - generic [ref=e40]: Left shoulder
+                  - img [ref=e41]
+              - listitem [ref=e43]:
+                - button "Brand strip" [ref=e44] [cursor=pointer]:
+                  - generic [ref=e46]: Brand strip
+                  - img [ref=e47]
+              - listitem [ref=e49]:
+                - button "Live feed" [ref=e50] [cursor=pointer]:
+                  - generic [ref=e52]: Live feed
+                  - img [ref=e53]
+              - listitem [ref=e55]:
+                - button "Right shoulder" [ref=e56] [cursor=pointer]:
+                  - generic [ref=e58]: Right shoulder
+                  - img [ref=e59]
+          - generic [ref=e61]:
+            - heading "Left leg" [level=2] [ref=e62]
+            - list [ref=e63]:
+              - listitem [ref=e64]:
+                - button "Left leg" [ref=e65] [cursor=pointer]:
+                  - generic [ref=e67]: Left leg
+                  - img [ref=e68]
+          - generic [ref=e70]:
+            - heading "Right leg" [level=2] [ref=e71]
+            - list [ref=e72]:
+              - listitem [ref=e73]:
+                - button "Right leg" [ref=e74] [cursor=pointer]:
+                  - generic [ref=e76]: Right leg
+                  - img [ref=e77]
+      - region "Arc stage" [ref=e79]:
+        - generic [ref=e81]:
+          - button "Zoom out" [ref=e82] [cursor=pointer]:
+            - img
+          - generic [ref=e83]: 100%
+          - button "Zoom in" [ref=e84] [cursor=pointer]:
+            - img
+          - button "Fit arc to view" [ref=e86] [cursor=pointer]:
+            - img
+            - text: Fit
+      - complementary [ref=e87]:
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - img [ref=e91]
+            - generic [ref=e93]:
+              - heading "Live feed" [level=2] [ref=e94]
+              - paragraph [ref=e95]: Top bar
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - heading "Shows" [level=3] [ref=e98]
+              - generic [ref=e99]:
+                - button "Live feed" [pressed] [ref=e100] [cursor=pointer]:
+                  - img [ref=e101]
+                  - generic [ref=e103]: Live feed
+                - button "Race clock" [ref=e104] [cursor=pointer]:
+                  - img [ref=e105]
+                  - generic [ref=e107]: Race clock
+                - button "Brand mark" [ref=e108] [cursor=pointer]:
+                  - img [ref=e109]
+                  - generic [ref=e111]: Brand mark
+                - button "Custom text" [ref=e112] [cursor=pointer]:
+                  - img [ref=e113]
+                  - generic [ref=e115]: Custom text
+                - button "Sponsors" [ref=e116] [cursor=pointer]:
+                  - img [ref=e117]
+                  - generic [ref=e119]: Sponsors
+                - button "Image" [ref=e120] [cursor=pointer]:
+                  - img [ref=e121]
+                  - generic [ref=e123]: Image
+                - button "Video" [ref=e124] [cursor=pointer]:
+                  - img [ref=e125]
+                  - generic [ref=e127]: Video
+                - button "Solid color" [ref=e128] [cursor=pointer]:
+                  - img [ref=e129]
+                  - generic [ref=e131]: Solid color
+                - button "Off" [ref=e132] [cursor=pointer]:
+                  - img [ref=e133]
+                  - generic [ref=e135]: "Off"
+            - generic [ref=e136]:
+              - heading "Settings" [level=3] [ref=e137]
+              - paragraph [ref=e138]: Shows the live athlete feed (controlled in “Live feed” below).
+            - generic [ref=e139]:
+              - heading "Live feed source" [level=3] [ref=e140]
+              - generic [ref=e141]:
+                - generic [ref=e142]:
+                  - generic [ref=e143]: Status
+                  - generic [ref=e144]: Connecting…
+                - generic [ref=e145]:
+                  - generic [ref=e146]:
+                    - generic [ref=e147]: Feed file
+                    - button "Refresh" [ref=e148] [cursor=pointer]:
+                      - img
+                      - text: Refresh
+                  - combobox [ref=e149]:
+                    - option "— Select a file —" [selected]
+                  - paragraph [ref=e150]: No .txt files found. Check FEED_DIR.
+                - generic [ref=e151]:
+                  - generic [ref=e152]: Split thresholds (cumulative)
+                  - generic [ref=e153]:
+                    - text: Swim ends
+                    - textbox "Swim ends" [ref=e154]: 45:00
+                  - generic [ref=e155]:
+                    - text: Bike ends
+                    - textbox "Bike ends" [ref=e156]: 3:30:00
+                  - generic [ref=e157]:
+                    - text: Grace buffer
+                    - textbox "Grace buffer" [ref=e158]: 02:00
+                  - paragraph [ref=e159]: Format H:MM:SS or MM:SS. Applied live.
+                - generic [ref=e160]:
+                  - text: Polling interval (ms)
+                  - spinbutton "Polling interval (ms)" [ref=e161]: "1500"
+                - generic [ref=e162]:
+                  - checkbox "Always use polling" [ref=e163]
+                  - text: Always use polling
+    - contentinfo [ref=e164]:
+      - generic [ref=e165]: Online
+      - generic [ref=e168]: feed connecting
+      - generic [ref=e170]: all zones active
+      - generic [ref=e171]: Autosaved · synced across tabs
+  - button "Open Next.js Dev Tools" [ref=e177] [cursor=pointer]:
+    - img [ref=e178]

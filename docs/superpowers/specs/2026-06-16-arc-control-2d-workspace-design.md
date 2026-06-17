@@ -1,7 +1,7 @@
 # Arc Control — 2D Interactive Workspace (redesign)
 
 **Date:** 2026-06-16
-**Status:** Approved structure (A+C hybrid); implementing.
+**Status:** Implemented, then revised 2026-06-17 per operator feedback (see "Revisions" below).
 **Supersedes the 3D preview** in `2026-06-16-arc-control-unified-design.md` for the `/` control
 dashboard only. Output routes (`/output/[surface]`), the surface/zone model, the canvas
 compositor, feed, and clock are unchanged.
@@ -121,5 +121,25 @@ down to a narrow window (rail/inspector collapsible under ~1100px).
 
 ## Out of scope (YAGNI)
 
-Drag-to-reposition zones, multi-select, undo history, front/back face toggle, pan. Zoom is the
-only stage transform.
+Drag-to-reposition zones, multi-select, undo history, front/back face toggle.
+
+## Revisions (2026-06-17)
+
+Operator feedback after the first implementation; these override the choices above:
+
+- **Editor feel.** The stage now pans as well as zooms (⌘/Ctrl-wheel + pinch zoom toward the
+  cursor; plain wheel / background-drag / middle-drag / space-drag pan; Fit recenters; range
+  0.25–3×). Pan is no longer out of scope.
+- **Selection chrome removed.** The viewfinder corner brackets, the always-on per-zone status
+  LEDs, and the hover fill/lift wash read as clutter — replaced by a single clean amber ring on
+  the selected zone and a quiet hairline ring on hover. Zone identity now lives in the rail +
+  inspector and a hover/selection label chip.
+- **Feed motion → broadcast ticker.** The per-row fade/slide (which made rows jump as the list
+  re-indexed) is replaced by a smooth dwell-then-glide vertical ticker that accumulates recent
+  athletes and loops (`lib/arc/render/feed-anim.ts`); reduced-motion shows the latest statically.
+- **Brand assets.** Toolbar uses the real white wordmark (`public/long_logo.png`); the arc brand
+  strip uses a new `brand` content type that recreates the LION ◆ HEART lockup with the heartbeat
+  pulse + tagline (the only horizontal logo asset is white, unusable on the white arc). The square
+  lion mark (`public/square_logo.jpeg`) is available for any image zone.
+- **Out-of-the-box feed.** The most-recent feed file is auto-selected so the feed connects on the
+  control page and every output without manual selection.

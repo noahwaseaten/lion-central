@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DEFAULT_THRESHOLDS } from "@/lib/feed/splits";
 import type { SplitThresholds } from "@/lib/feed/types";
@@ -57,6 +57,50 @@ export function useFeedSettings() {
       // ignore quota / privacy mode
     }
   }, [settings, loaded]);
+
+  // Keep output tabs in sync when the operator changes settings on the control page.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== KEY || !e.newValue) return;
+      try {
+        const parsed = JSON.parse(e.newValue) as Partial<FeedSettings>;
+        setSettings({
+          ...DEFAULTS,
+          ...parsed,
+          thresholds: { ...DEFAULTS.thresholds, ...parsed.thresholds },
+        });
+      } catch {
+        // ignore malformed broadcast
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // First run with no file chosen: auto-select the most recent feed file so the
+  // feed connects out of the box on the control page *and* every output tab,
+  // instead of silently showing "Feed unavailable" until someone picks one.
+  const autoTried = useRef(false);
+  useEffect(() => {
+    if (!loaded || autoTried.current) return;
+    autoTried.current = true;
+    if (settings.file) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/feed/files", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { files?: { name: string }[] };
+        const first = data.files?.[0]?.name;
+        if (!cancelled && first) setSettings((s) => (s.file ? s : { ...s, file: first }));
+      } catch {
+        // FEED_DIR unset / offline — feed surfaces handle the empty state.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loaded, settings.file]);
 
   const update = useCallback(
     (patch: Partial<FeedSettings>) => setSettings((s) => ({ ...s, ...patch })),

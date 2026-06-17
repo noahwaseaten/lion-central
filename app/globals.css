@@ -26,6 +26,12 @@
   --color-swim: var(--swim);
   --color-bike: var(--bike);
   --color-run: var(--run);
+  --color-brand: var(--brand);
+  --color-live: var(--live);
+  --color-online: var(--online);
+  --color-signal: var(--signal);
+  --color-stage: var(--stage);
+  --color-stage-line: var(--stage-line);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -76,6 +82,7 @@
   --swim: #0284c7;
   --bike: #ea580c;
   --run: #059669;
+  --brand: #5c6f33;
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -90,24 +97,27 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* "Timing console" graphite — cool, not pure black; deliberate over the
+     generic black + single-acid-accent AI look. See the 2D workspace spec. */
+  --background: #0e1116;
+  --foreground: #e8ecf2;
+  --card: #161a21;
+  --card-foreground: #e8ecf2;
+  --popover: #1b2029;
+  --popover-foreground: #e8ecf2;
+  /* Primary = signal amber (chronograph readout), used as the one UI accent. */
+  --primary: #f5a524;
+  --primary-foreground: #1a1206;
+  --secondary: #1b2029;
+  --secondary-foreground: #e8ecf2;
+  --muted: #161a21;
+  --muted-foreground: #8a93a3;
+  --accent: #1f2531;
+  --accent-foreground: #e8ecf2;
+  --destructive: #ef4444;
+  --border: #262c38;
+  --input: #2a313e;
+  --ring: #f5a524;
   --chart-1: oklch(0.845 0.143 164.978);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.596 0.145 163.225);
@@ -116,6 +126,13 @@
   --swim: #38bdf8;
   --bike: #fb923c;
   --run: #34d399;
+  --brand: #9cb35e;
+  /* Functional signals — color carries meaning, not decoration. */
+  --live: #ef4444;     /* live / recording (broadcast convention) */
+  --online: #34d399;   /* connected / online */
+  --signal: #f5a524;   /* primary action / focus */
+  --stage: #0a0c10;    /* the arc stage backdrop, deeper than the app bg */
+  --stage-line: #2b3340; /* gantry baseline + timing ticks */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);

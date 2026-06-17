@@ -37,6 +37,9 @@ yarn-error.log*
 # brainstorming / visual companion scratch
 .superpowers/
 
+# local scratch feed dir (test data)
+.scratch-feeds/
+
 # vercel
 .vercel
 
