@@ -5,6 +5,7 @@ import type { ZoneContent } from "../content";
 import { getImage, getVideo } from "./assets";
 import { tickerRows, type TickerRow } from "./feed-anim";
 import type { SurfaceInputs } from "./inputs";
+import { sponsorColumns, sponsorGrid } from "./sponsor-layout";
 
 const FONT = "Inter, system-ui, sans-serif";
 
@@ -48,7 +49,7 @@ export function drawComponent(
       paintFeed(ctx, w, h, inputs, tMs, componentId);
       break;
     case "clock":
-      paintClock(ctx, w, h, inputs);
+      paintClock(ctx, w, h, inputs, content);
       break;
     case "text":
       paintText(ctx, w, h, content);
@@ -214,7 +215,11 @@ function paintClock(
   w: number,
   h: number,
   inputs: SurfaceInputs,
+  content: Extract<ZoneContent, { type: "clock" }>,
 ): void {
+  // NumberFlow clocks render as a DOM overlay (see SurfaceView); leave the canvas
+  // region to the surface background so the two don't double up.
+  if (content.numberFlow) return;
   const text = formatClock(inputs.clock.ms);
   const px = fitFont(ctx, text, w * 0.86, h * 0.74, "800");
   ctx.font = `800 ${px}px ${FONT}`;
@@ -256,36 +261,53 @@ function paintSponsors(
   content: Extract<ZoneContent, { type: "sponsors" }>,
   tMs: number,
 ): void {
-  const imgs = content.images.filter(Boolean);
+  const items = content.items.filter((it) => it.src);
 
   if (content.mode === "rotate") {
-    if (imgs.length === 0) return placeholder(ctx, 8, 8, w - 16, h - 16, "SPONSOR");
+    if (items.length === 0) return placeholder(ctx, 8, 8, w - 16, h - 16, "SPONSOR");
     const interval = Math.max(800, content.intervalMs);
-    const idx = Math.floor(tMs / interval) % imgs.length;
+    const idx = Math.floor(tMs / interval) % items.length;
     const phase = (tMs % interval) / interval;
     const fade = Math.min(1, phase / 0.12); // quick fade-in each cycle
     ctx.globalAlpha = fade;
-    drawMediaContain(ctx, getImage(imgs[idx]), 10, 10, w - 20, h - 20);
+    const it = items[idx];
+    const img = getImage(it.src);
+    if (img && img.naturalWidth > 0) {
+      if (it.background) {
+        ctx.fillStyle = it.background;
+        ctx.fillRect(0, 0, w, h);
+      }
+      drawTransformed(ctx, img, img.naturalWidth, img.naturalHeight, w, h, it);
+    }
     ctx.globalAlpha = 1;
     return;
   }
 
-  // Grid: equal cells, one logo each. "auto" columns aim for near-square cells.
-  const count = imgs.length > 0 ? imgs.length : Math.max(1, Math.round(h / w));
-  const cols =
-    content.columns === "auto"
-      ? Math.max(1, Math.min(count, Math.round(Math.sqrt((count * w) / h))))
-      : Math.max(1, Math.min(count, Math.round(content.columns)));
-  const rows = Math.ceil(count / cols);
-  const cw = w / cols;
-  const chh = h / rows;
-  const pad = Math.min(cw, chh) * content.cellPadding;
+  // Grid: equal, evenly-spaced cells, one logo each, each with its own transform.
+  const count = items.length > 0 ? items.length : Math.max(1, Math.round(h / w));
+  const cols = sponsorColumns(content.columns, count, w, h);
+  const cells = sponsorGrid(count, w, h, cols, content.cellPadding);
 
   for (let i = 0; i < count; i++) {
-    const cx = (i % cols) * cw;
-    const cy = Math.floor(i / cols) * chh;
-    if (imgs[i]) drawMediaContain(ctx, getImage(imgs[i]), cx + pad, cy + pad, cw - pad * 2, chh - pad * 2);
-    else placeholder(ctx, cx + pad, cy + pad, cw - pad * 2, chh - pad * 2, "LOGO");
+    const cell = cells[i];
+    const it = items[i];
+    if (!it) {
+      placeholder(ctx, cell.x, cell.y, cell.w, cell.h, "LOGO");
+      continue;
+    }
+    if (it.background) {
+      ctx.fillStyle = it.background;
+      ctx.fillRect(cell.x, cell.y, cell.w, cell.h);
+    }
+    const img = getImage(it.src);
+    if (img && img.naturalWidth > 0) {
+      ctx.save();
+      ctx.translate(cell.x, cell.y);
+      drawTransformed(ctx, img, img.naturalWidth, img.naturalHeight, cell.w, cell.h, it);
+      ctx.restore();
+    } else {
+      placeholder(ctx, cell.x, cell.y, cell.w, cell.h, "LOGO");
+    }
   }
 }
 
