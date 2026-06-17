@@ -54,13 +54,25 @@ export function useFeed({
     let pollTimer: ReturnType<typeof setInterval> | null = null;
     let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const applySnapshot = (snap: FeedSnapshot, polling: boolean) => {
-      if (cancelled) return;
+    let pending: { snap: FeedSnapshot; polling: boolean } | null = null;
+    let flushRaf = 0;
+
+    const flush = () => {
+      flushRaf = 0;
+      if (cancelled || !pending) return;
+      const { snap, polling } = pending;
+      pending = null;
       haveData.current = true;
       setRaw(snap.entries);
-      setStatus(
-        snap.entries.length === 0 ? "empty" : polling ? "polling" : "live",
-      );
+      setStatus(snap.entries.length === 0 ? "empty" : polling ? "polling" : "live");
+    };
+
+    const applySnapshot = (snap: FeedSnapshot, polling: boolean) => {
+      if (cancelled) return;
+      // Keep only the latest snapshot and apply once per frame, so a burst of SSE
+      // frames can't trigger a React render storm.
+      pending = { snap, polling };
+      if (!flushRaf) flushRaf = requestAnimationFrame(flush);
     };
 
     const poll = async () => {
@@ -129,6 +141,7 @@ export function useFeed({
       es?.close();
       stopPolling();
       if (fallbackTimer) clearTimeout(fallbackTimer);
+      if (flushRaf) cancelAnimationFrame(flushRaf);
     };
   }, [file, pollingMs, useFallbackAlways]);
 
