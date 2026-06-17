@@ -64,7 +64,7 @@ export function clampRect(rect: NormRect, min = 0.04): NormRect {
 
 const sponsors = (mode: "rotate" | "grid"): ZoneContent => ({
   type: "sponsors",
-  images: [],
+  items: [],
   mode,
   intervalMs: 5000,
   columns: "auto",

@@ -10,7 +10,7 @@ export interface Preset {
 
 const sponsorsGrid = (): ZoneContent => ({
   type: "sponsors",
-  images: [],
+  items: [],
   mode: "grid",
   intervalMs: 5000,
   columns: "auto",
