@@ -10,10 +10,10 @@ export interface NormRect {
   h: number;
 }
 
-/** A selected component, identified by its surface and id. */
+/** A selection: a surface, optionally a specific component on it (id null = the surface itself). */
 export interface Selection {
   surface: SurfaceId;
-  id: string;
+  id: string | null;
 }
 
 /** One component placed on a surface canvas. */

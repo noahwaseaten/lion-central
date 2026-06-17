@@ -2,7 +2,6 @@
 
 import { ArrowDown, ArrowUp, Plus, Trash } from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button";
 import type { ContentType } from "@/lib/arc/content";
 import type { ArcConfig, Selection } from "@/lib/arc/layout-model";
 import type { ReorderDir } from "@/hooks/use-arc-config";
@@ -40,22 +39,28 @@ export function LayersPanel({
         return (
           <div key={surface.id} className="flex flex-col gap-1">
             <div className="flex items-center justify-between px-1.5">
-              <h2 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => onSelect({ surface: surface.id, id: null })}
+                className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 {surface.label}
-              </h2>
-              <AddComponentMenu
-                align="end"
-                onAdd={(type) => addComponent(surface.id, type)}
-                trigger={
-                  <button
-                    type="button"
-                    aria-label={`Add component to ${surface.label}`}
-                    className="grid size-5 place-items-center rounded text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <Plus weight="bold" className="size-3.5" />
-                  </button>
-                }
-              />
+              </button>
+              {selected?.surface === surface.id && (
+                <AddComponentMenu
+                  align="end"
+                  onAdd={(type) => addComponent(surface.id, type)}
+                  trigger={
+                    <button
+                      type="button"
+                      aria-label={`Add component to ${surface.label}`}
+                      className="grid size-5 place-items-center rounded text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Plus weight="bold" className="size-3.5" />
+                    </button>
+                  }
+                />
+              )}
             </div>
 
             {top.length === 0 ? (

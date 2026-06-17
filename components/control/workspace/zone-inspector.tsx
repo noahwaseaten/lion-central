@@ -69,17 +69,19 @@ export function ZoneInspector({
 }) {
   if (!selected) return <EmptyState />;
 
-  const surface = getSurface(selected.surface);
-  const comp = config.surfaces[selected.surface]?.find((c) => c.id === selected.id);
+  if (selected.id === null) return <EmptyState />;
+  const { surface: selectedSurface, id: selectedId } = selected as { surface: typeof selected.surface; id: string };
+  const surface = getSurface(selectedSurface);
+  const comp = config.surfaces[selectedSurface]?.find((c) => c.id === selectedId);
   if (!surface || !comp) return <EmptyState />;
 
   const { content, rect } = comp;
   const meta = CONTENT_META[content.type];
-  const px = componentPixelSize(selected.surface, rect);
+  const px = componentPixelSize(selectedSurface, rect);
   const aspect = px.w / px.h;
 
-  const setContent = (c: ZoneContent) => setComponentContent(selected.surface, selected.id, c);
-  const setRect = (r: NormRect) => setComponentRect(selected.surface, selected.id, r);
+  const setContent = (c: ZoneContent) => setComponentContent(selectedSurface, selectedId, c);
+  const setRect = (r: NormRect) => setComponentRect(selectedSurface, selectedId, r);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
@@ -91,7 +93,7 @@ export function ZoneInspector({
           <input
             value={comp.name ?? ""}
             placeholder={meta.label}
-            onChange={(e) => renameComponent(selected.surface, selected.id, e.target.value)}
+            onChange={(e) => renameComponent(selectedSurface, selectedId, e.target.value)}
             className="w-full truncate bg-transparent text-sm font-semibold outline-none placeholder:text-foreground focus:placeholder:text-muted-foreground"
             aria-label="Component name"
           />
@@ -106,10 +108,6 @@ export function ZoneInspector({
 
         <Group label="Settings">
           <ZoneFields content={content} onChange={setContent} aspect={aspect} />
-        </Group>
-
-        <Group label="Position & size">
-          <PositionFields rect={rect} onChange={setRect} reorder={(dir) => reorderComponent(selected.surface, selected.id, dir)} />
         </Group>
 
         {content.type === "feed" && (
@@ -130,6 +128,15 @@ export function ZoneInspector({
             />
           </Group>
         )}
+
+        {/* Layout controls sit last for every component type, consistently. */}
+        <Group label="Position & size">
+          <PositionFields
+            rect={rect}
+            onChange={setRect}
+            reorder={(dir) => reorderComponent(selectedSurface, selectedId, dir)}
+          />
+        </Group>
       </div>
     </div>
   );
@@ -293,10 +300,7 @@ function TypePicker({
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-2.5">
-      <h3 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </h3>
+    <section aria-label={label} className="flex flex-col gap-1.5">
       {children}
     </section>
   );

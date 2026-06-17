@@ -15,7 +15,7 @@ import {
 } from "react";
 
 import { Button } from "@/components/ui/button";
-import { type ContentType, defaultContent } from "@/lib/arc/content";
+import type { ContentType } from "@/lib/arc/content";
 import {
   type ArcConfig,
   type NormRect,
@@ -151,17 +151,19 @@ export function ArcStage({
 
   // Delete / nudge / deselect the selected component.
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || selected.id === null) return;
+    const selSurface = selected.surface;
+    const selId: string = selected.id;
     const onKey = (e: KeyboardEvent) => {
       const el = document.activeElement;
       if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
-      const list = config.surfaces[selected.surface] ?? [];
-      const comp = list.find((c) => c.id === selected.id);
+      const list = config.surfaces[selSurface] ?? [];
+      const comp = list.find((c) => c.id === selId);
       if (!comp) return;
 
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
-        removeComponent(selected.surface, selected.id);
+        removeComponent(selSurface, selId);
         onSelect(null);
         return;
       }
@@ -171,7 +173,7 @@ export function ArcStage({
       const r = comp.rect;
       const nudge = (patch: Partial<NormRect>) => {
         e.preventDefault();
-        setComponentRect(selected.surface, selected.id, { ...r, ...patch });
+        setComponentRect(selSurface, selId, { ...r, ...patch });
       };
       if (e.key === "ArrowLeft") nudge({ x: Math.max(0, r.x - step) });
       else if (e.key === "ArrowRight") nudge({ x: Math.min(1 - r.w, r.x + step) });
@@ -182,22 +184,39 @@ export function ArcStage({
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, config, removeComponent, setComponentRect, onSelect]);
 
-  const pan = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
+  const pan = useRef<{
+    x: number;
+    y: number;
+    tx: number;
+    ty: number;
+    surface?: SurfaceId | null;
+    moved: boolean;
+  } | null>(null);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!view) return;
-    const onControl = (e.target as HTMLElement).closest("[data-component],[data-stage-control]");
+    const target = e.target as HTMLElement;
+    const onControl = target.closest("[data-component],[data-stage-control]");
+    const surfaceEl = target.closest<HTMLElement>("[data-surface]");
     const wantsPan = e.button === 1 || spaceHeld || !onControl;
     if (!wantsPan) return;
-    // Plain click on empty space clears the selection.
-    if (!onControl && e.button === 0 && !spaceHeld) onSelect(null);
     e.preventDefault();
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
       // pointer capture unavailable — panning still works without it
     }
-    pan.current = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty };
+    pan.current = {
+      x: e.clientX,
+      y: e.clientY,
+      tx: view.tx,
+      ty: view.ty,
+      // remember what to select if this turns out to be a click, not a drag
+      surface: !onControl && e.button === 0 && !spaceHeld
+        ? ((surfaceEl?.dataset.surface as SurfaceId | undefined) ?? null)
+        : undefined,
+      moved: false,
+    };
     setPanning(true);
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -205,10 +224,16 @@ export function ArcStage({
     if (!p) return;
     const dx = e.clientX - p.x;
     const dy = e.clientY - p.y;
+    if (!p.moved && Math.hypot(dx, dy) > 4) p.moved = true;
     setView((v) => (v ? { ...v, tx: p.tx + dx, ty: p.ty + dy } : v));
   };
   const endPan = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!pan.current) return;
+    const p = pan.current;
+    if (!p) return;
+    if (!p.moved && p.surface !== undefined) {
+      // a plain click on empty space: select that surface, or clear on the backdrop
+      onSelect(p.surface ? { surface: p.surface, id: null } : null);
+    }
     pan.current = null;
     setPanning(false);
     try {
@@ -295,22 +320,24 @@ export function ArcStage({
                     />
                   ))}
 
-                  <AddComponentMenu
-                    align="start"
-                    onAdd={(type) => addComponent(surface.id, type)}
-                    trigger={
-                      <button
-                        type="button"
-                        data-stage-control
-                        aria-label={`Add component to ${surface.label}`}
-                        className="absolute z-40 flex items-center gap-1 rounded-md border border-border bg-popover/95 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground"
-                        style={{ left: p.x * view.scale, top: p.y * view.scale - 22 }}
-                      >
-                        <Plus weight="bold" className="size-3" />
-                        Add
-                      </button>
-                    }
-                  />
+                  {selected?.surface === surface.id && (
+                    <AddComponentMenu
+                      align="start"
+                      onAdd={(type) => addComponent(surface.id, type)}
+                      trigger={
+                        <button
+                          type="button"
+                          data-stage-control
+                          aria-label={`Add component to ${surface.label}`}
+                          className="absolute z-40 flex items-center gap-1 rounded-md border border-border bg-popover/95 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground"
+                          style={{ left: p.x * view.scale, top: p.y * view.scale - 22 }}
+                        >
+                          <Plus weight="bold" className="size-3" />
+                          Add
+                        </button>
+                      }
+                    />
+                  )}
 
                   {/* alignment guides */}
                   {guides?.surface === surface.id &&
