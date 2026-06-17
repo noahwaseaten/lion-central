@@ -1,23 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { ImageCropEditor } from "@/components/control/image-crop-editor";
-import { Button } from "@/components/ui/button";
-import { type Fit, type ZoneContent } from "@/lib/arc/content";
+import { LogoLibrary } from "@/components/control/logo-library";
+import { defaultTransform, type Fit, type ImageTransform, type SponsorItem, type ZoneContent } from "@/lib/arc/content";
 
 const inputCls =
   "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 const labelCls = "text-xs font-medium text-muted-foreground";
-
-function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(file);
-  });
-}
 
 /**
  * The type-specific fields for a component's content (no type selector — that
@@ -34,18 +25,37 @@ export function ZoneFields({
   aspect: number;
 }) {
   switch (content.type) {
-    case "feed":
-      return <Hint>Shows the live athlete feed (controlled in “Live feed” below).</Hint>;
     case "clock":
-      return <Hint>Shows the race clock (controlled in “Race clock” below).</Hint>;
-    case "off":
-      return <Hint>Blank (black) — useful to clear part of a surface.</Hint>;
+      return (
+        <div className="flex flex-col gap-2">
+          <Toggle
+            label="Animated digits (NumberFlow)"
+            checked={content.numberFlow}
+            onChange={(numberFlow) => onChange({ ...content, numberFlow })}
+          />
+          <Hint>Smoothly rolls the digits as the clock ticks. Timing is set in &ldquo;Race clock&rdquo;.</Hint>
+        </div>
+      );
     case "text":
       return <TextFields content={content} onChange={onChange} />;
     case "sponsors":
-      return <SponsorFields content={content} onChange={onChange} />;
+      return <SponsorFields content={content} onChange={onChange} aspect={aspect} />;
     case "image":
-      return <ImageCropEditor content={content} onChange={onChange} aspect={aspect} />;
+      return (
+        <div className="flex flex-col gap-3">
+          <ImageCropEditor
+            src={content.src}
+            transform={content}
+            aspect={aspect}
+            onChange={(t) => onChange({ ...content, ...t })}
+            onSrcChange={(src) => onChange({ ...content, src })}
+          />
+          <LogoLibrary
+            onPick={(url) => onChange({ ...content, src: content.src === url ? "" : url })}
+            selected={content.src ? [content.src] : []}
+          />
+        </div>
+      );
     case "video":
       return <VideoFields content={content} onChange={onChange} />;
     case "color":
@@ -93,26 +103,33 @@ function TextFields({
 function SponsorFields({
   content,
   onChange,
+  aspect,
 }: {
   content: Extract<ZoneContent, { type: "sponsors" }>;
   onChange: (next: ZoneContent) => void;
+  aspect: number;
 }) {
-  const [draft, setDraft] = useState(content.images.join("\n"));
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [openSrc, setOpenSrc] = useState<string | null>(null);
+  const srcs = content.items.map((i) => i.src);
 
-  const commit = (text: string) => {
-    setDraft(text);
-    onChange({ ...content, images: text.split("\n").map((s) => s.trim()).filter(Boolean) });
+  // Toggle a logo's membership; new logos get a default transform.
+  const toggle = (url: string) => {
+    const has = srcs.includes(url);
+    const items: SponsorItem[] = has
+      ? content.items.filter((i) => i.src !== url)
+      : [...content.items, { src: url, ...defaultTransform() }];
+    onChange({ ...content, items });
   };
 
-  const onUpload = async (files: FileList | null) => {
-    if (!files?.length) return;
-    const urls = await Promise.all(Array.from(files).map(readFileAsDataURL));
-    const next = [...content.images, ...urls];
-    setDraft(next.join("\n"));
-    onChange({ ...content, images: next });
-    if (fileRef.current) fileRef.current.value = "";
-  };
+  const patchItem = (src: string, t: ImageTransform) =>
+    onChange({
+      ...content,
+      items: content.items.map((i) => (i.src === src ? { ...i, ...t } : i)),
+    });
+
+  // Each cell's aspect ≈ component aspect ÷ columns-vs-rows; component aspect is a
+  // good-enough preview ratio for per-logo cropping.
+  const cellAspect = aspect;
 
   return (
     <div className="flex flex-col gap-3">
@@ -148,7 +165,7 @@ function SponsorFields({
               ))}
             </select>
           </Field>
-          <Field label="Cell padding">
+          <Field label="Gap">
             <input
               type="number"
               min={0}
@@ -180,25 +197,49 @@ function SponsorFields({
         </Field>
       )}
 
-      <Field label="Logo URLs (one per line)">
-        <textarea
-          className={`${inputCls} h-24 resize-y py-2`}
-          placeholder="https://… or upload below"
-          value={draft}
-          onChange={(e) => commit(e.target.value)}
-        />
-      </Field>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={(e) => void onUpload(e.target.files)}
-      />
-      <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-        Upload logos…
-      </Button>
+      <LogoLibrary onPick={toggle} selected={srcs} />
+
+      {content.items.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>
+              {content.items.length} logo{content.items.length === 1 ? "" : "s"} — click to crop
+            </span>
+            <button
+              type="button"
+              onClick={() => onChange({ ...content, items: [] })}
+              className="rounded px-1.5 py-0.5 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Clear
+            </button>
+          </div>
+
+          {content.items.map((item) => (
+            <div key={item.src} className="rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setOpenSrc((s) => (s === item.src ? null : item.src))}
+                aria-expanded={openSrc === item.src}
+                className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- uploaded logo, not a build asset */}
+                <img src={item.src} alt="" className="size-6 shrink-0 rounded object-contain" />
+                <span className="flex-1 truncate text-muted-foreground">{item.src.split("/").pop()}</span>
+              </button>
+              {openSrc === item.src && (
+                <div className="border-t border-border p-2">
+                  <ImageCropEditor
+                    src={item.src}
+                    transform={item}
+                    aspect={cellAspect}
+                    onChange={(t) => patchItem(item.src, t)}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

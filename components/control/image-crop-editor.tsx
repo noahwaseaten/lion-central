@@ -1,14 +1,12 @@
 "use client";
 
 import { ArrowCounterClockwise } from "@phosphor-icons/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
-import type { ZoneContent } from "@/lib/arc/content";
+import type { ImageTransform } from "@/lib/arc/content";
 import { getImage } from "@/lib/arc/render/assets";
 import { drawTransformed } from "@/lib/arc/render/zones";
-
-type ImageContent = Extract<ZoneContent, { type: "image" }>;
 
 const MAX_PREVIEW_W = 288;
 const MAX_PREVIEW_H = 184;
@@ -18,24 +16,33 @@ const MAX_SCALE = 8;
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 
 /**
- * Direct-manipulation crop/place editor for an image component: drag the preview
- * to pan, scroll to zoom toward the cursor, with Fit/Fill/Reset, zoom and padding
- * sliders, and a background fill. The preview is drawn by the same painter the
- * output uses, so what you see is exactly what renders.
+ * Direct-manipulation crop/place editor for an image or sponsor logo: drag the
+ * preview to pan, scroll to zoom toward the cursor, with Fit/Fill/Reset, zoom
+ * and padding sliders, and a background fill. The preview is drawn by the same
+ * painter the output uses, so what you see is exactly what renders.
+ *
+ * Pass `onSrcChange` to show a URL input + library picker above the canvas
+ * (omit it for per-sponsor-logo use where the src is fixed).
  */
 export function ImageCropEditor({
-  content,
-  onChange,
+  src,
+  transform,
   aspect,
+  onChange,
+  onSrcChange,
 }: {
-  content: ImageContent;
-  onChange: (next: ImageContent) => void;
-  /** width / height of the component, so the preview matches the real frame. */
+  src: string;
+  transform: ImageTransform;
   aspect: number;
+  /** Update the transform (zoom/pan/fit/padding/background). */
+  onChange: (next: ImageTransform) => void;
+  /** Update the source URL (omit to hide the URL field + library, e.g. for sponsor items). */
+  onSrcChange?: (src: string) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const contentRef = useRef(content);
-  contentRef.current = content;
+  const contentRef = useRef(transform);
+  // eslint-disable-next-line react-hooks/refs -- mirror latest transform into a ref for the rAF + wheel loops
+  contentRef.current = transform;
 
   // Preview box dimensions from the component's aspect ratio.
   const pw = aspect >= 1 ? MAX_PREVIEW_W : Math.round(MAX_PREVIEW_H * aspect);
@@ -44,49 +51,54 @@ export function ImageCropEditor({
   const h = Math.min(ph, MAX_PREVIEW_H);
 
   // Redraw the preview each frame so it tracks edits and image loading.
+  // DPR-aware: backing store is w·dpr × h·dpr, drawn in logical w/h units.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
     let raf = 0;
     const loop = () => {
       const c = contentRef.current;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
       // Checkerboard so transparent / letterboxed areas read as "outside the frame".
-      paintChecker(ctx, canvas.width, canvas.height);
+      paintChecker(ctx, w, h);
       if (c.background) {
         ctx.fillStyle = c.background;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, w, h);
       }
-      const img = getImage(c.src);
+      const img = getImage(src);
       if (img && img.naturalWidth > 0) {
-        drawTransformed(ctx, img, img.naturalWidth, img.naturalHeight, canvas.width, canvas.height, c);
+        drawTransformed(ctx, img, img.naturalWidth, img.naturalHeight, w, h, c);
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [w, h, src]);
 
   const inner = useCallback(() => {
-    const pad = Math.min(w, h) * content.padding;
+    const pad = Math.min(w, h) * transform.padding;
     return { pad, iw: Math.max(1, w - pad * 2), ih: Math.max(1, h - pad * 2) };
-  }, [w, h, content.padding]);
+  }, [w, h, transform.padding]);
 
   // Pan on drag.
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const onPointerDown = (e: React.PointerEvent) => {
-    if (!content.src) return;
+    if (!src) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = { x: e.clientX, y: e.clientY, ox: content.offset.x, oy: content.offset.y };
+    drag.current = { x: e.clientX, y: e.clientY, ox: transform.offset.x, oy: transform.offset.y };
   };
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d) return;
     const { iw, ih } = inner();
     onChange({
-      ...content,
+      ...transform,
       offset: { x: d.ox + (e.clientX - d.x) / iw, y: d.oy + (e.clientY - d.y) / ih },
     });
   };
@@ -106,7 +118,7 @@ export function ImageCropEditor({
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const c = contentRef.current;
-      const img = getImage(c.src);
+      const img = getImage(src);
       const next = clamp(c.scale * Math.exp(-e.deltaY * 0.0015), MIN_SCALE, MAX_SCALE);
       if (!img || img.naturalWidth === 0) {
         onChange({ ...c, scale: next });
@@ -139,31 +151,34 @@ export function ImageCropEditor({
     };
     canvas.addEventListener("wheel", onWheel, { passive: false });
     return () => canvas.removeEventListener("wheel", onWheel);
-  }, [w, h, onChange]);
+  }, [w, h, onChange, src]);
 
-  const reset = (patch: Partial<ImageContent>) =>
-    onChange({ ...content, scale: 1, offset: { x: 0, y: 0 }, ...patch });
+  const reset = (patch: Partial<ImageTransform>) =>
+    onChange({ ...transform, scale: 1, offset: { x: 0, y: 0 }, ...patch });
 
   return (
     <div className="flex flex-col gap-3">
-      <SrcField content={content} onChange={onChange} />
+      {onSrcChange && (
+        <input
+          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          value={src.startsWith("data:") ? "" : src}
+          placeholder={src.startsWith("data:") ? "(uploaded image)" : "https://… image URL"}
+          onChange={(e) => onSrcChange(e.target.value)}
+          aria-label="Image URL"
+        />
+      )}
 
       <div className="flex flex-col items-center gap-2">
         <canvas
           ref={canvasRef}
-          width={w}
-          height={h}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
           style={{ width: w, height: h }}
-          className={`touch-none rounded-md border border-input ${content.src ? "cursor-grab active:cursor-grabbing" : ""}`}
+          className={`touch-none rounded-md border border-input ${src ? "cursor-grab active:cursor-grabbing" : ""}`}
           aria-label="Image crop preview — drag to pan, scroll to zoom"
         />
-        {content.src && (
-          <p className="text-[11px] text-muted-foreground">Drag to pan · scroll to zoom</p>
-        )}
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
@@ -181,21 +196,21 @@ export function ImageCropEditor({
 
       <Slider
         label="Zoom"
-        value={content.scale}
+        value={transform.scale}
         min={MIN_SCALE}
         max={4}
         step={0.01}
         format={(v) => `${Math.round(v * 100)}%`}
-        onChange={(scale) => onChange({ ...content, scale })}
+        onChange={(scale) => onChange({ ...transform, scale })}
       />
       <Slider
         label="Padding"
-        value={content.padding}
+        value={transform.padding}
         min={0}
         max={0.4}
         step={0.01}
         format={(v) => `${Math.round(v * 100)}%`}
-        onChange={(padding) => onChange({ ...content, padding })}
+        onChange={(padding) => onChange({ ...transform, padding })}
       />
 
       <div className="flex items-center justify-between gap-3 text-sm">
@@ -203,62 +218,21 @@ export function ImageCropEditor({
         <div className="flex items-center gap-2">
           <input
             type="color"
-            value={content.background ?? "#000000"}
-            onChange={(e) => onChange({ ...content, background: e.target.value })}
+            value={transform.background ?? "#000000"}
+            onChange={(e) => onChange({ ...transform, background: e.target.value })}
             className="h-8 w-12 cursor-pointer rounded-md border border-input bg-background"
             aria-label="Background color"
           />
           <Button
             type="button"
-            variant={content.background ? "ghost" : "outline"}
+            variant={transform.background ? "ghost" : "outline"}
             size="sm"
-            onClick={() => onChange({ ...content, background: content.background ? null : "#000000" })}
+            onClick={() => onChange({ ...transform, background: transform.background ? null : "#000000" })}
           >
-            {content.background ? "Clear" : "None"}
+            {transform.background ? "Clear" : "None"}
           </Button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SrcField({
-  content,
-  onChange,
-}: {
-  content: ImageContent;
-  onChange: (next: ImageContent) => void;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const isData = content.src.startsWith("data:");
-
-  const onUpload = (file: File | undefined) => {
-    if (!file) return;
-    const r = new FileReader();
-    r.onload = () => onChange({ ...content, src: String(r.result) });
-    r.readAsDataURL(file);
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      <input
-        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        value={isData ? "" : content.src}
-        placeholder={isData ? "(uploaded image)" : "https://…"}
-        onChange={(e) => onChange({ ...content, src: e.target.value })}
-        aria-label="Image URL"
-      />
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => onUpload(e.target.files?.[0])}
-      />
-      <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-        {content.src ? "Replace image…" : "Upload image…"}
-      </Button>
     </div>
   );
 }

@@ -396,18 +396,6 @@ function drawMedia(
   ctx.restore();
 }
 
-function drawMediaContain(
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement | null,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): void {
-  if (!img || img.naturalWidth === 0) return placeholder(ctx, x, y, w, h, "SPONSOR");
-  drawMedia(ctx, img, img.naturalWidth, img.naturalHeight, x, y, w, h, "contain");
-}
-
 function placeholder(
   ctx: CanvasRenderingContext2D,
   x: number,
