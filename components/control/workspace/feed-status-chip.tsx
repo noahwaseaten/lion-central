@@ -10,9 +10,9 @@ const MAP: Record<
   { label: string; variant: BadgeProps["variant"]; pulse?: boolean }
 > = {
   connecting: { label: "Connecting", variant: "muted" },
-  live: { label: "Live · push", variant: "live", pulse: true },
+  live: { label: "Listening", variant: "live", pulse: true },
   reconnecting: { label: "Reconnecting", variant: "muted" },
-  polling: { label: "Live · polling", variant: "signal", pulse: true },
+  polling: { label: "Listening - Polling", variant: "signal", pulse: true },
   empty: { label: "No athletes", variant: "online" },
   error: { label: "No feed", variant: "muted" },
   offline: { label: "Offline", variant: "muted" },

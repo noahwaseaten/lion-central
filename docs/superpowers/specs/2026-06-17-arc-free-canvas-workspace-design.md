@@ -299,6 +299,29 @@ and `MenuRadioItem` so the presets menu can show the active preset correctly.
   presets, save/apply/delete a custom preset, reload (persistence) and open a
   second tab (cross-tab sync).
 
+## Revision — round 2 (2026-06-17)
+
+Added after the designer confirmed measurements and the operator refined requirements:
+
+- **Module dimensions (confirmed).** The physical arc is built from 256×128px
+  (1000×500mm) and 128×128px (500×500mm) LED modules; the clock is a separate
+  unit. `layout.ts` already matches: top bar 1280×256 = a 5×2 grid of rect
+  modules, each leg 128×640 = five square modules, clock separate. No change
+  forced; revisit module counts only if the physical build differs.
+- **Server-side logo library** (`lib/arc/assets-store.ts`, `app/api/assets/*`,
+  `hooks/use-logo-library.ts`, `components/control/logo-library.tsx`). Logos are
+  uploaded once to a local assets dir (`ASSETS_DIR` env, else `<cwd>/.lion-assets`)
+  and served by stable URL, so they persist across tabs and any device on the
+  server — replacing per-browser data URLs. Sponsor and image components pick from
+  the shared gallery; content still stores plain URLs (no model change).
+- **NumberFlow clock.** Clock content gains `numberFlow: boolean`. When on, the
+  clock renders via the real `@number-flow/react` library as a DOM overlay
+  (`components/arc/number-flow-clock.tsx` + `surface-clock-overlay.tsx`) layered on
+  the canvas in both the workspace and `/output`; the canvas painter skips that
+  region. When off, the canvas clock is unchanged.
+- **Inspector consistency.** The Position & Size (X/Y/W/H + align + layer) group is
+  now consistently the **last** group for every component type.
+
 ## Risks
 
 - **Persisted config migration** is the main risk — a wrong table leaves operators
