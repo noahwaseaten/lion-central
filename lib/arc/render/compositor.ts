@@ -10,7 +10,8 @@ export type { SurfaceInputs };
  * Shared by the workspace stage and the output routes, so the editor preview and
  * the physical output never diverge.
  *
- * `ctx` is expected to be sized to the surface's native dimensions. Components are
+ * `ctx` is expected to map native surface units onto its backing store — the caller
+ * sets the base transform (see `useSurfaceCanvas`). Components are
  * drawn in array order — the last one in the list paints on top.
  */
 export function drawSurface(
