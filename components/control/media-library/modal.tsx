@@ -1,14 +1,20 @@
 "use client";
 
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Dialog, DialogClose, DialogPopup, DialogTitle } from "@/components/ui/dialog";
 import { useLogoLibrary } from "@/hooks/use-logo-library";
+import { cn } from "@/lib/utils";
 
 import { AssetGrid } from "./asset-grid";
 import { FolderSidebar } from "./folder-sidebar";
 import { UploadZone } from "./upload-zone";
+
+const PREVIEW_WIDTH = 340;
+const TOOLBAR_HEIGHT = 48;
+const PREVIEW_MARGIN = 16;
+const PREVIEW_DURATION_MS = 15_000;
 
 export function MediaLibraryModal({
   open,
@@ -39,6 +45,24 @@ export function MediaLibraryModal({
 
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [previewActive, setPreviewActive] = useState(false);
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear timer on unmount
+  useEffect(() => {
+    return () => {
+      if (previewTimer.current) clearTimeout(previewTimer.current);
+    };
+  }, []);
+
+  // Wrap onOpenChange so closing always exits preview and clears the timer
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setPreviewActive(false);
+      if (previewTimer.current) clearTimeout(previewTimer.current);
+    }
+    onOpenChange(next);
+  };
 
   const filteredAssets = useMemo(() => {
     let list = assets;
@@ -56,12 +80,39 @@ export function MediaLibraryModal({
 
   const handlePick = (url: string) => {
     onPick(url);
-    if (mode === "single") onOpenChange(false);
+    if (mode === "single") {
+      // Enter/extend preview mode instead of auto-closing
+      setPreviewActive(true);
+      if (previewTimer.current) clearTimeout(previewTimer.current);
+      previewTimer.current = setTimeout(() => {
+        setPreviewActive(false);
+      }, PREVIEW_DURATION_MS);
+    }
   };
 
+  // Compute inline position for preview mode — always use left/top so CSS can
+  // transition between the two states using consistent units.
+  const previewPositionStyle: React.CSSProperties | undefined = previewActive
+    ? {
+        right: `${PREVIEW_MARGIN}px`,
+        top: `${TOOLBAR_HEIGHT + PREVIEW_MARGIN}px`,
+        left: "auto",
+        width: `${PREVIEW_WIDTH}px`,
+        height: `calc(100dvh - ${TOOLBAR_HEIGHT + PREVIEW_MARGIN * 2}px)`,
+        transform: "none",
+      }
+    : undefined;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPopup className="flex h-[80vh] w-[min(900px,90vw)] flex-col overflow-hidden">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogPopup
+        className={cn(
+          "flex flex-col overflow-hidden",
+          !previewActive && "h-[80vh] w-[min(900px,90vw)]",
+        )}
+        backdropHidden={previewActive}
+        positionStyle={previewPositionStyle}
+      >
         <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3">
           <DialogTitle>Media library</DialogTitle>
           <div className="flex flex-1 items-center gap-2 rounded-md border border-input bg-background px-2.5">
