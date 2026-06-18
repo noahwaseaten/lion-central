@@ -1,6 +1,6 @@
 "use client";
 
-import type { AssetInfo } from "@/lib/arc/assets-store";
+import type { AssetInfo } from "@/lib/arc/assets-shared";
 
 import { AssetTile } from "./asset-tile";
 

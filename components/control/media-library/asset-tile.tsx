@@ -4,8 +4,8 @@ import { Check, FolderSimple, Play, Trash } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
-import { isVideoAsset } from "@/lib/arc/assets-store";
-import type { AssetInfo } from "@/lib/arc/assets-store";
+import { isVideoAsset } from "@/lib/arc/assets-shared";
+import type { AssetInfo } from "@/lib/arc/assets-shared";
 import { cn } from "@/lib/utils";
 
 function VideoThumbnail({ url }: { url: string }) {

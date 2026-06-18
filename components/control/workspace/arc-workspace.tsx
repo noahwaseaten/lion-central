@@ -17,7 +17,6 @@ import type { SurfaceId } from "@/lib/arc/surfaces";
 
 import { ArcStage } from "./arc-stage";
 import { LayersPanel } from "./layers-panel";
-import { StatusBar } from "./status-bar";
 import { TopToolbar } from "./top-toolbar";
 import { ZoneInspector } from "./zone-inspector";
 
@@ -134,8 +133,6 @@ export function ArcWorkspace() {
             />
           </aside>
         </div>
-
-        <StatusBar online={online} feedStatus={status} />
       </div>
     </IconContext.Provider>
   );

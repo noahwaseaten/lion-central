@@ -65,41 +65,44 @@ export function OutputGuides({ label, w, h }: { label: string; w: number; h: num
   const C = "#ff2d95";
 
   return (
-    <div className="pointer-events-none absolute inset-0">
-      {on && (
-        <>
-          {/* exact-rectangle border */}
-          <div className="absolute inset-0" style={{ boxShadow: `inset 0 0 0 2px ${C}` }} />
-          {/* center crosshair */}
-          <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2" style={{ background: C, opacity: 0.5 }} />
-          <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2" style={{ background: C, opacity: 0.5 }} />
-          {/* corner crop marks */}
-          {(["tl", "tr", "bl", "br"] as const).map((c) => (
+    <>
+      {/* guides overlay — stays clipped to the surface rectangle */}
+      <div className="pointer-events-none absolute inset-0">
+        {on && (
+          <>
+            {/* exact-rectangle border */}
+            <div className="absolute inset-0" style={{ boxShadow: `inset 0 0 0 2px ${C}` }} />
+            {/* center crosshair */}
+            <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2" style={{ background: C, opacity: 0.5 }} />
+            <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2" style={{ background: C, opacity: 0.5 }} />
+            {/* corner crop marks */}
+            {(["tl", "tr", "bl", "br"] as const).map((c) => (
+              <div
+                key={c}
+                className="absolute"
+                style={{
+                  width: 18,
+                  height: 18,
+                  [c.includes("l") ? "left" : "right"]: -1,
+                  [c.includes("t") ? "top" : "bottom"]: -1,
+                  borderTop: c.includes("t") ? `3px solid ${C}` : undefined,
+                  borderBottom: c.includes("b") ? `3px solid ${C}` : undefined,
+                  borderLeft: c.includes("l") ? `3px solid ${C}` : undefined,
+                  borderRight: c.includes("r") ? `3px solid ${C}` : undefined,
+                }}
+              />
+            ))}
+            {/* dimension readout */}
             <div
-              key={c}
-              className="absolute"
-              style={{
-                width: 18,
-                height: 18,
-                [c.includes("l") ? "left" : "right"]: -1,
-                [c.includes("t") ? "top" : "bottom"]: -1,
-                borderTop: c.includes("t") ? `3px solid ${C}` : undefined,
-                borderBottom: c.includes("b") ? `3px solid ${C}` : undefined,
-                borderLeft: c.includes("l") ? `3px solid ${C}` : undefined,
-                borderRight: c.includes("r") ? `3px solid ${C}` : undefined,
-              }}
-            />
-          ))}
-          {/* dimension readout */}
-          <div
-            className="absolute bottom-1 right-1 rounded px-1.5 py-0.5 text-xs font-bold"
-            style={{ color: "#fff", background: C }}
-          >
-            {label} · {w}×{h}
-          </div>
-        </>
-      )}
-      {/* toggle button */}
+              className="absolute bottom-1 right-1 rounded px-1.5 py-0.5 text-xs font-bold"
+              style={{ color: "#fff", background: C }}
+            >
+              {label} · {w}×{h}
+            </div>
+          </>
+        )}
+      </div>
+      {/* toggle button — fixed to viewport so it sits outside the surface rectangle */}
       <button
         type="button"
         onClick={() => {
@@ -113,12 +116,12 @@ export function OutputGuides({ label, w, h }: { label: string; w: number; h: num
             return next;
           });
         }}
-        className="pointer-events-auto absolute left-2 top-2 rounded-md border border-white/30 bg-black/60 px-2 py-1 text-xs font-medium text-white outline-none transition-opacity hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white"
+        className="fixed left-2 top-2 rounded-md border border-white/30 bg-black/60 px-2 py-1 text-xs font-medium text-white outline-none transition-opacity hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white"
         style={{ opacity: idle ? 0 : 1 }}
         aria-label={on ? "Hide alignment guides (G)" : "Show alignment guides (G)"}
       >
         {on ? "Guides on (G)" : "Guides off (G)"}
       </button>
-    </div>
+    </>
   );
 }

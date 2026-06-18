@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import type { AssetInfo } from "@/lib/arc/assets-store";
+import type { AssetInfo } from "@/lib/arc/assets-shared";
 
 function readFileAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

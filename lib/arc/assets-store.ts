@@ -1,5 +1,14 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import {
+  type AssetInfo,
+  contentTypeFor,
+  isValidAssetId,
+} from "./assets-shared";
+
+export type { AssetInfo };
+export { contentTypeFor, isValidAssetId } from "./assets-shared";
+export { isVideoAsset } from "./assets-shared";
 
 /**
  * Server-side logo/asset store (LOCAL ONLY). Uploaded logos are written to a
@@ -10,42 +19,6 @@ import path from "node:path";
  */
 function assetsDir(): string {
   return process.env.ASSETS_DIR || path.join(process.cwd(), ".lion-assets");
-}
-
-export interface AssetInfo {
-  id: string;
-  name: string;
-  url: string;
-}
-
-const ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
-
-/** Reject ids that could escape the assets directory. */
-export function isValidAssetId(id: string): boolean {
-  return ID_RE.test(id) && !id.includes("..");
-}
-
-const CONTENT_TYPES: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-  ".svg": "image/svg+xml",
-  ".avif": "image/avif",
-  ".mp4": "video/mp4",
-  ".webm": "video/webm",
-  ".mov": "video/quicktime",
-};
-
-export function contentTypeFor(id: string): string {
-  return CONTENT_TYPES[path.extname(id).toLowerCase()] ?? "application/octet-stream";
-}
-
-const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov"]);
-
-export function isVideoAsset(id: string): boolean {
-  return VIDEO_EXTS.has(path.extname(id).toLowerCase());
 }
 
 const EXT_FROM_MIME: Record<string, string> = {
@@ -61,11 +34,9 @@ const EXT_FROM_MIME: Record<string, string> = {
 };
 
 function randomToken(): string {
-  // Local-only; uniqueness, not cryptographic strength, is what matters.
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
-/** The original name after the `<token>__` prefix (for display). */
 function displayName(id: string): string {
   const i = id.indexOf("__");
   return i >= 0 ? id.slice(i + 2) : id;

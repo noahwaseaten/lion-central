@@ -87,10 +87,6 @@ function Wordmark() {
         priority
         className="h-[18px] w-auto opacity-95"
       />
-      <span className="hidden h-4 w-px bg-border sm:block" />
-      <span className="hidden text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:inline">
-        Arc Control
-      </span>
     </div>
   );
 }
