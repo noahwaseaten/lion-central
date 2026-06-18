@@ -35,14 +35,15 @@ export function AppearancePopover({
             value={background}
             onChange={(e) => onChange(e.target.value)}
             aria-label="Background color"
-            className="h-9 w-12 cursor-pointer rounded-md border border-input bg-background"
+            className="h-8 w-10 shrink-0 cursor-pointer rounded-md border border-input bg-background"
           />
           <input
             type="text"
             value={background}
             onChange={(e) => onChange(e.target.value)}
             aria-label="Background hex"
-            className="h-9 flex-1 rounded-md border border-input bg-background px-3 font-mono text-sm tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            maxLength={7}
+            className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 font-mono text-sm tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         </div>
         <div className="mt-3 flex gap-1.5">
