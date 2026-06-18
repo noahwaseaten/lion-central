@@ -65,9 +65,19 @@ export function AssetTile({
   onMove: (id: string, folder: string | null) => void;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   return (
-    <div className="group relative flex flex-col gap-1">
+    <div
+      className={cn("group relative flex flex-col gap-1", dragging && "opacity-50")}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("assetId", asset.id);
+        e.dataTransfer.effectAllowed = "move";
+        setDragging(true);
+      }}
+      onDragEnd={() => setDragging(false)}
+    >
       <button
         type="button"
         onClick={() => onPick(asset.url)}
