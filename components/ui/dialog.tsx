@@ -8,11 +8,14 @@ import { cn } from "@/lib/utils";
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
 
-function DialogBackdrop({ className }: { className?: string }) {
+function DialogBackdrop({ className, hidden }: { className?: string; hidden?: boolean }) {
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm",
+        "fixed inset-0 z-40",
+        hidden
+          ? "pointer-events-none bg-transparent"
+          : "bg-black/60 backdrop-blur-sm",
         "transition-opacity data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
         "motion-reduce:transition-none",
         className,
@@ -24,22 +27,28 @@ function DialogBackdrop({ className }: { className?: string }) {
 function DialogPopup({
   children,
   className,
+  backdropHidden,
+  positionStyle,
 }: {
   children: React.ReactNode;
   className?: string;
+  backdropHidden?: boolean;
+  positionStyle?: React.CSSProperties;
 }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogBackdrop />
+      <DialogBackdrop hidden={backdropHidden} />
       <DialogPrimitive.Popup
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card shadow-2xl shadow-black/60 outline-none",
-          "transition-[transform,opacity]",
-          "data-[starting-style]:-translate-x-1/2 data-[starting-style]:-translate-y-[48%] data-[starting-style]:opacity-0",
-          "data-[ending-style]:-translate-x-1/2 data-[ending-style]:-translate-y-[48%] data-[ending-style]:opacity-0",
+          "fixed z-50 rounded-xl border border-border bg-card shadow-2xl shadow-black/60 outline-none",
+          "transition-[left,top,width,height,transform,opacity] duration-300 ease-in-out",
+          !positionStyle && "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+          "data-[starting-style]:opacity-0",
+          "data-[ending-style]:opacity-0",
           "motion-reduce:transition-none",
           className,
         )}
+        style={positionStyle}
       >
         {children}
       </DialogPrimitive.Popup>
