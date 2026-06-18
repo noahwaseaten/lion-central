@@ -33,10 +33,19 @@ const CONTENT_TYPES: Record<string, string> = {
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".avif": "image/avif",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
 };
 
 export function contentTypeFor(id: string): string {
   return CONTENT_TYPES[path.extname(id).toLowerCase()] ?? "application/octet-stream";
+}
+
+const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov"]);
+
+export function isVideoAsset(id: string): boolean {
+  return VIDEO_EXTS.has(path.extname(id).toLowerCase());
 }
 
 const EXT_FROM_MIME: Record<string, string> = {
@@ -46,6 +55,9 @@ const EXT_FROM_MIME: Record<string, string> = {
   "image/webp": ".webp",
   "image/svg+xml": ".svg",
   "image/avif": ".avif",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
 };
 
 function randomToken(): string {
@@ -70,7 +82,10 @@ export async function listAssets(): Promise<AssetInfo[]> {
   }
   const withTime = await Promise.all(
     entries
-      .filter((f) => contentTypeFor(f).startsWith("image/"))
+      .filter((f) => {
+        const ct = contentTypeFor(f);
+        return ct.startsWith("image/") || ct.startsWith("video/");
+      })
       .map(async (f) => {
         const stat = await fs.stat(path.join(dir, f)).catch(() => null);
         return { id: f, name: displayName(f), url: `/api/assets/${f}`, t: stat?.mtimeMs ?? 0 };
