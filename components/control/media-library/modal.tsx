@@ -85,6 +85,7 @@ export function MediaLibraryModal({
               onCreate={(name) => void createFolder(name)}
               onRename={(old, next) => void renameFolder(old, next)}
               onDelete={(name) => void deleteFolder(name)}
+              onMove={(id, folder) => void moveAsset(id, folder)}
             />
           </aside>
 

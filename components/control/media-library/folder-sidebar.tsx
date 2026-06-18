@@ -12,6 +12,7 @@ export function FolderSidebar({
   onCreate,
   onRename,
   onDelete,
+  onMove,
 }: {
   folders: string[];
   active: string | null;
@@ -19,12 +20,14 @@ export function FolderSidebar({
   onCreate: (name: string) => void;
   onRename: (old: string, next: string) => void;
   onDelete: (name: string) => void;
+  onMove: (id: string, folder: string | null) => void;
 }) {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const renameRef = useRef<HTMLInputElement>(null);
+  const [dropTarget, setDropTarget] = useState<string>("none");
 
   const commitCreate = () => {
     const name = newName.trim();
@@ -48,10 +51,37 @@ export function FolderSidebar({
     setRenamingFolder(null);
   };
 
+  const handleDrop = (e: React.DragEvent, folder: string | null) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("assetId");
+    if (id) onMove(id, folder);
+    setDropTarget("none");
+  };
+
+  const dropProps = (key: string, folder: string | null) => ({
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      setDropTarget(key);
+    },
+    onDragLeave: () => setDropTarget("none"),
+    onDrop: (e: React.DragEvent) => handleDrop(e, folder),
+  });
+
   return (
     <nav className="flex h-full flex-col gap-0.5 overflow-y-auto p-2" aria-label="Folders">
-      <SidebarItem label="All" active={active === null} onClick={() => onSelect(null)} />
-      <SidebarItem label="Unfiled" active={active === ""} onClick={() => onSelect("")} />
+      <SidebarItem
+        label="All"
+        active={active === null}
+        onClick={() => onSelect(null)}
+      />
+      <SidebarItem
+        label="Unfiled"
+        active={active === ""}
+        onClick={() => onSelect("")}
+        isDropTarget={dropTarget === "__unfiled__"}
+        dragProps={dropProps("__unfiled__", null)}
+      />
 
       {folders.length > 0 && <hr className="my-1.5 border-border" />}
 
@@ -75,11 +105,13 @@ export function FolderSidebar({
               <button
                 type="button"
                 onClick={() => onSelect(folder)}
+                {...dropProps(folder, folder)}
                 className={cn(
                   "flex h-7 w-full items-center gap-2 rounded-md px-2 text-left text-xs outline-none transition-colors",
                   active === folder
                     ? "bg-accent font-medium text-foreground"
                     : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+                  dropTarget === folder && "ring-1 ring-amber-400",
                 )}
               >
                 <FolderSimple className="size-3.5 shrink-0" />
@@ -141,20 +173,26 @@ function SidebarItem({
   label,
   active,
   onClick,
+  isDropTarget,
+  dragProps,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  isDropTarget?: boolean;
+  dragProps?: React.HTMLAttributes<HTMLButtonElement>;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      {...dragProps}
       className={cn(
         "flex h-7 items-center rounded-md px-2 text-left text-xs outline-none transition-colors",
         active
           ? "bg-accent font-medium text-foreground"
           : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+        isDropTarget && "ring-1 ring-amber-400",
       )}
     >
       {label}
