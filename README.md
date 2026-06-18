@@ -16,12 +16,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Arc displays (local only)
+## Arc Control (local only)
 
-These pages drive the physical arc screens and read from the local filesystem — **never deploy them**. See `SPEC.md` for the full design.
+One app to preview and control the whole physical arc. It reads from the local
+filesystem — **never deploy it**. See
+[`docs/superpowers/specs/2026-06-16-arc-control-unified-design.md`](docs/superpowers/specs/2026-06-16-arc-control-unified-design.md)
+for the full design.
 
-- **`/live`** — the 1280×256 top bar: sponsor strip + shoulders with the live athlete feed in the bottom-center. Press **S** for the setup drawer (file picker, split thresholds, polling).
-- **`/clock`** — the 320×64 race-clock counter. Press **C** for controls (start / pause / reset / set).
+- **`/`** — the **Arc Control** dashboard: a live, orbitable **3D preview** of the
+  whole arc (top bar + clock-on-top + both legs) next to a single control panel.
+  Pick any zone (or click it in the 3D view) and set what it shows — live feed,
+  race clock, sponsor logos (rotate/grid), text, image, video, or solid color.
+  Includes the feed file picker, split thresholds, clock controls, a background
+  color, and a **Test → Append random athlete** button to preview the feed
+  animation without the timing backend.
+- **`/output/<surface>`** — the clean, full-screen render of one physical surface,
+  auto-scaled to its screen. Point each LED/projector at one of these:
+  `topbar`, `clock`, `leg-left`, `leg-right`. They stay in sync with the control
+  page across tabs.
 
 ### Configuration
 
@@ -31,7 +43,7 @@ Copy `.env.example` to `.env.local` and set `FEED_DIR` to the absolute path of t
 FEED_DIR=C:\path\to\timing\feeds
 ```
 
-Each feed line is `BIB FIRSTNAME LASTNAME TIME`, where `TIME` is cumulative race time (`H:MM:SS` or `MM:SS`). The split (Swim/Bike/Run) is inferred from that time against the thresholds set in the setup drawer.
+Each feed line is `BIB FIRSTNAME LASTNAME TIME`, where `TIME` is cumulative race time (`H:MM:SS` or `MM:SS`). The split (Swim/Bike/Run) is inferred from that time against the thresholds set in the control panel.
 
 ### Commands
 

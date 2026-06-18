@@ -45,6 +45,21 @@ export function useRaceClock() {
     }
   }, [state, loaded]);
 
+  // Keep other tabs (e.g. /output/clock) in sync with start/pause/reset/set.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== KEY || !e.newValue) return;
+      try {
+        setState({ ...DEFAULT, ...(JSON.parse(e.newValue) as Partial<ClockState>) });
+        setNowMs(Date.now());
+      } catch {
+        // ignore malformed broadcast
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   // Tick only while running; setState lives in the interval callback (allowed).
   useEffect(() => {
     if (!state.running) return;

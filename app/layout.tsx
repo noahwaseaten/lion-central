@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lion Central",
+  title: "Arc Control · Lion Central",
   description: "Arc control & live feed for triathlon events.",
 };
 

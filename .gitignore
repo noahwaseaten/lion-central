@@ -34,8 +34,6 @@ yarn-error.log*
 .env*
 !.env.example
 
-# brainstorming / visual companion scratch
-.superpowers/
 
 # vercel
 .vercel
@@ -43,3 +41,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local uploaded logos (LOCAL ONLY asset store)
+.lion-assets/
+
+# brainstorming visual companion sessions
+.superpowers/

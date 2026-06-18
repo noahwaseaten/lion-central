@@ -1,4 +1,4 @@
-import { open, readdir, stat } from "node:fs/promises";
+import { appendFile, open, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 import { parseLines } from "./parse";
@@ -58,6 +58,15 @@ export async function listTxtFiles(
       }),
   );
   return files.sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
+/**
+ * Append a single line (newline-terminated) to a feed file within `dir`. Used by
+ * the local-only test tool; path-guarded like every other feed access.
+ */
+export async function appendLine(dir: string, name: string, line: string): Promise<void> {
+  const filePath = safeResolve(dir, name);
+  await appendFile(filePath, line.endsWith("\n") ? line : `${line}\n`, "utf8");
 }
 
 /** Read + parse the current snapshot (last `count` valid athletes, newest-first). */

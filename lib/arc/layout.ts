@@ -1,30 +1,44 @@
 /**
- * Arc display layout constants.
+ * Arc display layout constants — the single source of truth for the physical
+ * surface dimensions that make up the arc.
  *
- * Single source of truth for the physical surface dimensions and the
- * composition of the top bar (sponsor strip + shoulders + live-feed region).
- * All values are in CSS pixels at native (unscaled) size; `ScaleToFit`
- * uniformly scales the whole surface to whatever screen it runs on.
+ * The arc is an inverted-U archway: a horizontal TOP BAR with a CLOCK panel
+ * mounted on top-center, and two vertical LEGS hanging from the sides. Front and
+ * back faces carry LED content; the inner/top/bottom edges are bare frame.
+ *
+ * All values are native CSS pixels at unscaled size; `ScaleToFit` uniformly
+ * scales a surface to whatever screen/projector it runs on, and the 3D preview
+ * maps each surface onto the arc geometry at these proportions.
  */
 
+/** Horizontal top bar. */
 export const TOP_BAR = { w: 1280, h: 256 } as const;
 
-/** Full-width sponsor / brand strip across the top of the bar. */
-export const TOP_STRIP_H = 44;
+/** Clock panel mounted on top of the bar, centered. */
+export const CLOCK = { w: 384, h: 96 } as const;
 
-/** Width of each sponsor "shoulder" flanking the live feed. */
-export const SHOULDER_W = 260;
+/** Each vertical leg. */
+export const LEG = { w: 128, h: 640 } as const;
 
-/** Bottom-center live-feed region (holds the 3 stacked rows). */
+/** Width of each sponsor shoulder flanking the center column. */
+export const SHOULDER_W = 315;
+
+/** Height of the brand strip above the feed (within the center column). */
+export const BRAND_H = 100;
+
+/** Center live-feed region. */
 export const FEED = {
-  w: TOP_BAR.w - SHOULDER_W * 2, // 760
-  h: TOP_BAR.h - TOP_STRIP_H, // 212
-  x: SHOULDER_W, // 260
-  y: TOP_STRIP_H, // 44
+  w: TOP_BAR.w - SHOULDER_W * 2, // 650
+  h: TOP_BAR.h - BRAND_H, // 156
 } as const;
 
-/** Race-clock surface — a quarter of the top bar on each axis. */
-export const CLOCK = { w: 320, h: 64 } as const;
+/**
+ * How many recent athlete lines the feed routes tail from the file. The feed
+ * component derives its visible row count from its own height (up to 6), and the
+ * client accumulates history across snapshots, so a small buffer here keeps a
+ * tall feed filled on first load.
+ */
+export const FEED_ROWS = 6;
 
-/** Number of athlete rows shown in the feed. */
-export const FEED_ROWS = 3;
+/** Depth of the arc structure in the 3D preview (native px units). */
+export const ARC_DEPTH = 120;

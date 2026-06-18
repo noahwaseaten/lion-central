@@ -1,0 +1,142 @@
+"use client";
+
+import { IconContext } from "@phosphor-icons/react";
+import { useCallback, useState } from "react";
+
+import { OfflineBanner } from "@/components/control/offline-banner";
+import { useArcConfig } from "@/hooks/use-arc-config";
+import { useFeed } from "@/hooks/use-feed";
+import { useFeedSettings } from "@/hooks/use-feed-settings";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { usePresets } from "@/hooks/use-presets";
+import { useRaceClock } from "@/hooks/use-race-clock";
+import { type ContentType, defaultContent } from "@/lib/arc/content";
+import type { Selection } from "@/lib/arc/layout-model";
+import type { SurfaceInputs } from "@/lib/arc/render/inputs";
+import type { SurfaceId } from "@/lib/arc/surfaces";
+
+import { ArcStage } from "./arc-stage";
+import { LayersPanel } from "./layers-panel";
+import { StatusBar } from "./status-bar";
+import { TopToolbar } from "./top-toolbar";
+import { ZoneInspector } from "./zone-inspector";
+
+/**
+ * The unified 2D Arc Control workspace: a toolbar, a layers rail, the interactive
+ * free-canvas stage, and a contextual inspector — all driving the shared layout
+ * the `/output/*` screens render.
+ */
+export function ArcWorkspace() {
+  const {
+    config,
+    setBackground,
+    replaceConfig,
+    addComponent,
+    removeComponent,
+    setComponentContent,
+    setComponentRect,
+    renameComponent,
+    reorderComponent,
+  } = useArcConfig();
+  const { builtins, custom, save, remove } = usePresets();
+  const { settings, update } = useFeedSettings();
+  const online = useOnlineStatus();
+  const { entries, status } = useFeed({
+    file: settings.file,
+    thresholds: settings.thresholds,
+    pollingMs: settings.pollingMs,
+    useFallbackAlways: settings.useFallbackAlways,
+    online,
+  });
+  const { elapsed, running, start, pause, reset, setElapsedMs } = useRaceClock();
+
+  const [selected, setSelected] = useState<Selection | null>(null);
+
+  // Add a component of `type` to a surface and select it.
+  const addAndSelect = useCallback(
+    (surface: SurfaceId, type: ContentType) => {
+      const id = addComponent(surface, defaultContent(type));
+      setSelected({ surface, id });
+    },
+    [addComponent],
+  );
+
+  const inputs: SurfaceInputs = {
+    config,
+    feed: { entries, status },
+    clock: { ms: elapsed, running },
+  };
+
+  return (
+    <IconContext.Provider value={{ weight: "regular", size: 16 }}>
+      <div className="dark flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+        <TopToolbar
+          config={config}
+          setBackground={setBackground}
+          feedSettings={settings}
+          feedStatus={status}
+          clock={{ elapsed, running, start, pause, reset }}
+          presets={{
+            builtins,
+            custom,
+            onApply: (c) => {
+              replaceConfig(c);
+              setSelected(null);
+            },
+            onSave: (name) => save(name, config),
+            onDelete: remove,
+          }}
+        />
+
+        {!online && (
+          <div className="border-b border-border px-3 py-2">
+            <OfflineBanner />
+          </div>
+        )}
+
+        <div className="flex min-h-0 flex-1">
+          <aside className="hidden w-56 shrink-0 border-r border-border bg-card md:block">
+            <LayersPanel
+              config={config}
+              selected={selected}
+              onSelect={setSelected}
+              addComponent={addAndSelect}
+              removeComponent={(surface, id) => {
+                removeComponent(surface, id);
+                setSelected((s) => (s?.id === id ? null : s));
+              }}
+              reorderComponent={reorderComponent}
+            />
+          </aside>
+
+          <ArcStage
+            config={config}
+            inputs={inputs}
+            selected={selected}
+            onSelect={setSelected}
+            setComponentRect={setComponentRect}
+            addComponent={addAndSelect}
+            removeComponent={removeComponent}
+          />
+
+          <aside className="w-80 shrink-0 border-l border-border bg-card">
+            <ZoneInspector
+              selected={selected}
+              config={config}
+              setComponentContent={setComponentContent}
+              setComponentRect={setComponentRect}
+              renameComponent={renameComponent}
+              reorderComponent={reorderComponent}
+              feedSettings={settings}
+              updateFeed={update}
+              feedStatus={status}
+              clock={{ elapsed, running, start, pause, reset, setElapsedMs }}
+            />
+          </aside>
+        </div>
+
+        <StatusBar online={online} feedStatus={status} />
+      </div>
+    </IconContext.Provider>
+  );
+}
