@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { ImageCropEditor } from "@/components/control/image-crop-editor";
 import { MediaLibraryTrigger } from "@/components/control/media-library";
+import { Switch } from "@/components/ui/switch";
 import { defaultTransform, type Fit, type ImageTransform, type SponsorItem, type ZoneContent } from "@/lib/arc/content";
 
 const inputCls =
@@ -28,10 +29,10 @@ export function ZoneFields({
     case "clock":
       return (
         <div className="flex flex-col gap-2">
-          <Toggle
+          <Switch
             label="Animated digits (NumberFlow)"
             checked={content.numberFlow}
-            onChange={(numberFlow) => onChange({ ...content, numberFlow })}
+            onCheckedChange={(numberFlow) => onChange({ ...content, numberFlow })}
           />
         </div>
       );
@@ -271,35 +272,14 @@ function VideoFields({
           <option value="cover">Cover (fill, may crop)</option>
         </select>
       </Field>
-      <div className="flex gap-4">
-        <Toggle label="Loop" checked={content.loop} onChange={(loop) => onChange({ ...content, loop })} />
-        <Toggle label="Muted" checked={content.muted} onChange={(muted) => onChange({ ...content, muted })} />
+      <div className="flex flex-col gap-2">
+        <Switch label="Loop" checked={content.loop} onCheckedChange={(loop) => onChange({ ...content, loop })} />
+        <Switch label="Muted" checked={content.muted} onCheckedChange={(muted) => onChange({ ...content, muted })} />
       </div>
     </div>
   );
 }
 
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2 text-sm">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="size-4 accent-primary"
-      />
-      {label}
-    </label>
-  );
-}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
