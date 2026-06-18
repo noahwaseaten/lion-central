@@ -4,7 +4,6 @@ import {
   CornersOut,
   MagnifyingGlassMinus,
   MagnifyingGlassPlus,
-  Plus,
 } from "@phosphor-icons/react";
 import {
   useCallback,
@@ -31,7 +30,6 @@ import {
 import { SURFACES, type SurfaceId } from "@/lib/arc/surfaces";
 import { cn } from "@/lib/utils";
 
-import { AddComponentMenu } from "./add-component-menu";
 import { ArcSurface } from "./arc-surface";
 import { ComponentFrame } from "./component-frame";
 
@@ -319,25 +317,6 @@ export function ArcStage({
                       }
                     />
                   ))}
-
-                  {selected?.surface === surface.id && (
-                    <AddComponentMenu
-                      align="start"
-                      onAdd={(type) => addComponent(surface.id, type)}
-                      trigger={
-                        <button
-                          type="button"
-                          data-stage-control
-                          aria-label={`Add component to ${surface.label}`}
-                          className="absolute z-40 flex items-center gap-1 rounded-md border border-border bg-popover/95 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground"
-                          style={{ left: p.x * view.scale, top: p.y * view.scale - 22 }}
-                        >
-                          <Plus weight="bold" className="size-3" />
-                          Add
-                        </button>
-                      }
-                    />
-                  )}
 
                   {/* alignment guides */}
                   {guides?.surface === surface.id &&
