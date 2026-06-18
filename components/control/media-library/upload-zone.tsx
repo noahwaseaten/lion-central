@@ -43,7 +43,7 @@ export function UploadZone({
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/mp4,video/webm,video/quicktime"
         multiple
         className="hidden"
         onChange={(e) => { if (e.target.files?.length) void handleFiles(e.target.files); }}
@@ -58,7 +58,7 @@ export function UploadZone({
         >
           {uploading ? "Uploading…" : "Click to upload"}
         </button>
-        <p className="text-xs text-muted-foreground">or drag & drop · images only</p>
+        <p className="text-xs text-muted-foreground">or drag & drop · images & video</p>
       </div>
     </div>
   );
