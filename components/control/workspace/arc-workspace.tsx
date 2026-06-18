@@ -135,7 +135,7 @@ export function ArcWorkspace() {
           </aside>
         </div>
 
-        <StatusBar online={online} feedStatus={status} config={config} />
+        <StatusBar online={online} feedStatus={status} />
       </div>
     </IconContext.Provider>
   );

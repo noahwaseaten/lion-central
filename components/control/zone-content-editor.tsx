@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { ImageCropEditor } from "@/components/control/image-crop-editor";
-import { LogoLibrary } from "@/components/control/logo-library";
+import { MediaLibraryTrigger } from "@/components/control/media-library";
 import { defaultTransform, type Fit, type ImageTransform, type SponsorItem, type ZoneContent } from "@/lib/arc/content";
 
 const inputCls =
@@ -33,7 +33,6 @@ export function ZoneFields({
             checked={content.numberFlow}
             onChange={(numberFlow) => onChange({ ...content, numberFlow })}
           />
-          <Hint>Smoothly rolls the digits as the clock ticks. Timing is set in &ldquo;Race clock&rdquo;.</Hint>
         </div>
       );
     case "text":
@@ -50,9 +49,10 @@ export function ZoneFields({
             onChange={(t) => onChange({ ...content, ...t })}
             onSrcChange={(src) => onChange({ ...content, src })}
           />
-          <LogoLibrary
-            onPick={(url) => onChange({ ...content, src: content.src === url ? "" : url })}
+          <MediaLibraryTrigger
+            mode="single"
             selected={content.src ? [content.src] : []}
+            onPick={(url) => onChange({ ...content, src: content.src === url ? "" : url })}
           />
         </div>
       );
@@ -197,7 +197,7 @@ function SponsorFields({
         </Field>
       )}
 
-      <LogoLibrary onPick={toggle} selected={srcs} />
+      <MediaLibraryTrigger mode="multi" selected={srcs} onPick={toggle} />
 
       {content.items.length > 0 && (
         <div className="flex flex-col gap-1.5">
@@ -310,6 +310,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Hint({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs text-muted-foreground">{children}</p>;
-}

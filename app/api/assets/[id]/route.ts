@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { moveAsset } from "@/lib/arc/asset-folders";
 import { contentTypeFor, deleteAsset, isValidAssetId, readAsset } from "@/lib/arc/assets-store";
 
 export const dynamic = "force-dynamic";
@@ -33,5 +34,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const { id } = await params;
   if (!isValidAssetId(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   await deleteAsset(id);
+  await moveAsset(id, null);
   return NextResponse.json({ ok: true });
 }

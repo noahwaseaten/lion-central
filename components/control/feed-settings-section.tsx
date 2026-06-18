@@ -16,9 +16,9 @@ interface FeedFile {
 
 const STATUS_COPY: Record<ConnectionStatus, string> = {
   connecting: "Connecting…",
-  live: "Live (push)",
+  live: "Live",
   reconnecting: "Reconnecting…",
-  polling: "Live (polling)",
+  polling: "Polling",
   empty: "Connected — no athletes yet",
   error: "No feed",
   offline: "Offline",
