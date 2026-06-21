@@ -4,6 +4,7 @@ import { IconContext } from "@phosphor-icons/react";
 import { useCallback, useState } from "react";
 
 import { OfflineBanner } from "@/components/control/offline-banner";
+import { useAnnouncement } from "@/hooks/use-announcement";
 import { useArcConfig } from "@/hooks/use-arc-config";
 import { useFeed } from "@/hooks/use-feed";
 import { useFeedSettings } from "@/hooks/use-feed-settings";
@@ -52,6 +53,7 @@ export function ArcWorkspace() {
   });
   const { elapsed, running, start, pause, reset, setElapsedMs } = useRaceClock();
   const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
+  const { announcement, send: sendAnnouncement, cancel: cancelAnnouncement } = useAnnouncement();
 
   const [selected, setSelected] = useState<Selection | null>(null);
 
@@ -68,7 +70,7 @@ export function ArcWorkspace() {
     config,
     feed: { entries, status, lastArrivalMs, lastArrivalSplit },
     clock: { ms: elapsed, running },
-    announcement: null,
+    announcement,
   };
 
   return (

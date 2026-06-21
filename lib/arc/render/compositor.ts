@@ -1,7 +1,7 @@
 import type { Rect } from "./zones";
 import { getSurface, type SurfaceId } from "../surfaces";
-import type { SurfaceInputs } from "./inputs";
-import { drawComponent, hexA, SPLIT_COLOR } from "./zones";
+import type { AnnouncementRecord, SurfaceInputs } from "./inputs";
+import { drawComponent, fitFont, hexA, SPLIT_COLOR } from "./zones";
 
 export type { SurfaceInputs };
 
@@ -48,4 +48,48 @@ export function drawSurface(
     if (rect.w < 1 || rect.h < 1) continue;
     drawComponent(ctx, rect, comp.content, inputs, tMs, comp.id);
   }
+
+  // Announcement overlay — drawn last so it covers all components.
+  if (inputs.announcement) {
+    paintAnnouncement(ctx, surface.w, surface.h, inputs.announcement);
+  }
+}
+
+const ANN_FONT = "Inter, system-ui, sans-serif";
+
+function paintAnnouncement(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  rec: AnnouncementRecord,
+): void {
+  const now = Date.now();
+  const fadeIn  = Math.min(1, (now - rec.startedAt) / 200);
+  const fadeOut = Math.min(1, (rec.endsAt - now) / 400);
+  const alpha   = Math.min(fadeIn, fadeOut);
+  if (alpha <= 0.01) return;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, w, h);
+
+  const hasSub = !!rec.subtitle?.trim();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const titlePx = fitFont(ctx, rec.text, w * 0.88, hasSub ? h * 0.44 : h * 0.56, "800");
+  ctx.font = `800 ${titlePx}px ${ANN_FONT}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(rec.text, w / 2, hasSub ? h * 0.42 : h / 2);
+
+  if (hasSub) {
+    const subPx = fitFont(ctx, rec.subtitle!, w * 0.82, h * 0.22, "500");
+    ctx.font = `500 ${subPx}px ${ANN_FONT}`;
+    ctx.fillStyle = hexA("#ffffff", 0.6);
+    ctx.fillText(rec.subtitle!, w / 2, h * 0.72);
+  }
+
+  ctx.restore();
 }

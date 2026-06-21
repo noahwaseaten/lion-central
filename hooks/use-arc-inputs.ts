@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import type { SurfaceInputs } from "@/lib/arc/render/inputs";
 
+import { useAnnouncement } from "./use-announcement";
 import { useArcConfig } from "./use-arc-config";
 import { useFeed } from "./use-feed";
 import { useFeedSettings } from "./use-feed-settings";
@@ -29,14 +30,15 @@ export function useArcInputs(): SurfaceInputs {
   });
   const { elapsed, running } = useRaceClock();
   const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
+  const { announcement } = useAnnouncement();
 
   return useMemo<SurfaceInputs>(
     () => ({
       config,
       feed: { entries, status, lastArrivalMs, lastArrivalSplit },
       clock: { ms: elapsed, running },
-      announcement: null,
+      announcement,
     }),
-    [config, entries, status, lastArrivalMs, lastArrivalSplit, elapsed, running],
+    [config, entries, status, lastArrivalMs, lastArrivalSplit, elapsed, running, announcement],
   );
 }
