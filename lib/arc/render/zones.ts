@@ -21,7 +21,7 @@ export interface Rect {
 const FEED_ROW_PX = 62;
 
 /** Split colors tuned for the white arc (matches :root tokens). */
-const SPLIT_COLOR: Record<Split, string> = {
+export const SPLIT_COLOR: Record<Split, string> = {
   swim: "#0284c7",
   bike: "#ea580c",
   run: "#059669",
@@ -254,6 +254,25 @@ function paintText(
   }
 }
 
+function drawSponsorLogo(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  it: Extract<ZoneContent, { type: "sponsors" }>["items"][number],
+  alpha: number,
+): void {
+  const img = getImage(it.src);
+  if (!img || img.naturalWidth === 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (it.background) {
+    ctx.fillStyle = it.background;
+    ctx.fillRect(0, 0, w, h);
+  }
+  drawTransformed(ctx, img, img.naturalWidth, img.naturalHeight, w, h, it);
+  ctx.restore();
+}
+
 function paintSponsors(
   ctx: CanvasRenderingContext2D,
   w: number,
@@ -268,18 +287,14 @@ function paintSponsors(
     const interval = Math.max(800, content.intervalMs);
     const idx = Math.floor(tMs / interval) % items.length;
     const phase = (tMs % interval) / interval;
-    const fade = Math.min(1, phase / 0.12); // quick fade-in each cycle
-    ctx.globalAlpha = fade;
-    const it = items[idx];
-    const img = getImage(it.src);
-    if (img && img.naturalWidth > 0) {
-      if (it.background) {
-        ctx.fillStyle = it.background;
-        ctx.fillRect(0, 0, w, h);
-      }
-      drawTransformed(ctx, img, img.naturalWidth, img.naturalHeight, w, h, it);
+    const FADE = 0.15;
+    if (phase > 1 - FADE) {
+      const t = (phase - (1 - FADE)) / FADE;
+      drawSponsorLogo(ctx, w, h, items[idx], 1 - t);
+      drawSponsorLogo(ctx, w, h, items[(idx + 1) % items.length], t);
+    } else {
+      drawSponsorLogo(ctx, w, h, items[idx], 1);
     }
-    ctx.globalAlpha = 1;
     return;
   }
 
@@ -453,7 +468,7 @@ function centerText(
   ctx.fillText(text, w / 2, h / 2);
 }
 
-function fitFont(
+export function fitFont(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxW: number,
@@ -477,7 +492,7 @@ function ellipsize(ctx: CanvasRenderingContext2D, text: string, maxW: number): s
   return t + "…";
 }
 
-function hexA(hex: string, alpha: number): string {
+export function hexA(hex: string, alpha: number): string {
   const a = Math.round(alpha * 255).toString(16).padStart(2, "0");
   return hex.length === 7 ? hex + a : hex;
 }

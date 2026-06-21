@@ -28,6 +28,8 @@ import { ZoneInspector } from "./zone-inspector";
 export function ArcWorkspace() {
   const {
     config,
+    isDirty,
+    publish,
     setBackground,
     replaceConfig,
     addComponent,
@@ -36,7 +38,7 @@ export function ArcWorkspace() {
     setComponentRect,
     renameComponent,
     reorderComponent,
-  } = useArcConfig();
+  } = useArcConfig("draft");
   const { builtins, custom, save, remove } = usePresets();
   const { settings, update } = useFeedSettings();
   const online = useOnlineStatus();
@@ -62,8 +64,9 @@ export function ArcWorkspace() {
 
   const inputs: SurfaceInputs = {
     config,
-    feed: { entries, status },
+    feed: { entries, status, lastArrivalMs: 0, lastArrivalSplit: null },
     clock: { ms: elapsed, running },
+    announcement: null,
   };
 
   return (
@@ -75,6 +78,8 @@ export function ArcWorkspace() {
           feedSettings={settings}
           feedStatus={status}
           clock={{ elapsed, running, start, pause, reset }}
+          onPublish={publish}
+          isDirty={isDirty}
           presets={{
             builtins,
             custom,

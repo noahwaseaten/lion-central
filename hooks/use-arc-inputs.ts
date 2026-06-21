@@ -29,7 +29,12 @@ export function useArcInputs(): SurfaceInputs {
   const { elapsed, running } = useRaceClock();
 
   return useMemo<SurfaceInputs>(
-    () => ({ config, feed: { entries, status }, clock: { ms: elapsed, running } }),
+    () => ({
+      config,
+      feed: { entries, status, lastArrivalMs: 0, lastArrivalSplit: null },
+      clock: { ms: elapsed, running },
+      announcement: null,
+    }),
     [config, entries, status, elapsed, running],
   );
 }
