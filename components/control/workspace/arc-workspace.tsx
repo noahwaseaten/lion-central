@@ -84,6 +84,11 @@ export function ArcWorkspace() {
           clock={{ elapsed, running, start, pause, reset }}
           onPublish={publish}
           isDirty={isDirty}
+          announcementControls={{
+            announcement,
+            send: sendAnnouncement,
+            cancel: cancelAnnouncement,
+          }}
           presets={{
             builtins,
             custom,
