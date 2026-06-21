@@ -7,6 +7,7 @@ import type { SurfaceInputs } from "@/lib/arc/render/inputs";
 import { useArcConfig } from "./use-arc-config";
 import { useFeed } from "./use-feed";
 import { useFeedSettings } from "./use-feed-settings";
+import { useLastArrival } from "./use-last-arrival";
 import { useOnlineStatus } from "./use-online-status";
 import { useRaceClock } from "./use-race-clock";
 
@@ -27,14 +28,15 @@ export function useArcInputs(): SurfaceInputs {
     online,
   });
   const { elapsed, running } = useRaceClock();
+  const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
 
   return useMemo<SurfaceInputs>(
     () => ({
       config,
-      feed: { entries, status, lastArrivalMs: 0, lastArrivalSplit: null },
+      feed: { entries, status, lastArrivalMs, lastArrivalSplit },
       clock: { ms: elapsed, running },
       announcement: null,
     }),
-    [config, entries, status, elapsed, running],
+    [config, entries, status, lastArrivalMs, lastArrivalSplit, elapsed, running],
   );
 }

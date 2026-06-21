@@ -7,6 +7,7 @@ import { OfflineBanner } from "@/components/control/offline-banner";
 import { useArcConfig } from "@/hooks/use-arc-config";
 import { useFeed } from "@/hooks/use-feed";
 import { useFeedSettings } from "@/hooks/use-feed-settings";
+import { useLastArrival } from "@/hooks/use-last-arrival";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { usePresets } from "@/hooks/use-presets";
 import { useRaceClock } from "@/hooks/use-race-clock";
@@ -50,6 +51,7 @@ export function ArcWorkspace() {
     online,
   });
   const { elapsed, running, start, pause, reset, setElapsedMs } = useRaceClock();
+  const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
 
   const [selected, setSelected] = useState<Selection | null>(null);
 
@@ -64,7 +66,7 @@ export function ArcWorkspace() {
 
   const inputs: SurfaceInputs = {
     config,
-    feed: { entries, status, lastArrivalMs: 0, lastArrivalSplit: null },
+    feed: { entries, status, lastArrivalMs, lastArrivalSplit },
     clock: { ms: elapsed, running },
     announcement: null,
   };

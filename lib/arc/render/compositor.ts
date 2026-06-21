@@ -1,7 +1,7 @@
 import type { Rect } from "./zones";
 import { getSurface, type SurfaceId } from "../surfaces";
 import type { SurfaceInputs } from "./inputs";
-import { drawComponent } from "./zones";
+import { drawComponent, hexA, SPLIT_COLOR } from "./zones";
 
 export type { SurfaceInputs };
 
@@ -26,6 +26,16 @@ export function drawSurface(
   // Arc background (the physical arc is white).
   ctx.fillStyle = inputs.config.background || "#ffffff";
   ctx.fillRect(0, 0, surface.w, surface.h);
+
+  // Background pulse: faint split-coloured wash that decays over 2 s when a new athlete arrives.
+  const PULSE_MS = 2000;
+  if (inputs.feed.lastArrivalMs > 0 && inputs.feed.lastArrivalSplit) {
+    const pulseFade = Math.max(0, 1 - (tMs - inputs.feed.lastArrivalMs) / PULSE_MS);
+    if (pulseFade > 0) {
+      ctx.fillStyle = hexA(SPLIT_COLOR[inputs.feed.lastArrivalSplit], 0.09 * pulseFade);
+      ctx.fillRect(0, 0, surface.w, surface.h);
+    }
+  }
 
   const components = inputs.config.surfaces[surfaceId] ?? [];
   for (const comp of components) {
