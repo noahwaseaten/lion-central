@@ -5,6 +5,7 @@ import {
   Image as ImageIcon,
   Images,
   PaintBucket,
+  QrCode,
   TextT,
   Timer,
   VideoCamera,
@@ -25,6 +26,7 @@ export const CONTENT_META: Record<ContentType, { label: string; Icon: Icon; dot:
   sponsors: { label: "Sponsors", Icon: Images, dot: "bg-swim" },
   image: { label: "Image", Icon: ImageIcon, dot: "bg-bike" },
   video: { label: "Video", Icon: VideoCamera, dot: "bg-run" },
+  qr: { label: "QR Code", Icon: QrCode, dot: "bg-foreground" },
   color: { label: "Solid color", Icon: PaintBucket, dot: "bg-foreground" },
   off: { label: "Off", Icon: CircleDashed, dot: "bg-muted-foreground" },
 };

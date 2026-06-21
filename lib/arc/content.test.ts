@@ -44,3 +44,20 @@ describe("normalizeContent — sponsors items", () => {
     expect(out.items.map((i) => i.src)).toEqual(["ok.png"]);
   });
 });
+
+describe("normalizeContent — qr", () => {
+  it("returns default label when label is missing", () => {
+    const out = normalizeContent({ type: "qr", url: "https://results.example.com" });
+    expect(out).toEqual({ type: "qr", url: "https://results.example.com", label: "Scan for results" });
+  });
+
+  it("keeps a provided label", () => {
+    const out = normalizeContent({ type: "qr", url: "https://x.com", label: "Track your athlete" });
+    expect(out).toEqual({ type: "qr", url: "https://x.com", label: "Track your athlete" });
+  });
+
+  it("coerces missing url to empty string", () => {
+    const out = normalizeContent({ type: "qr" });
+    expect(out).toEqual({ type: "qr", url: "", label: "Scan for results" });
+  });
+});

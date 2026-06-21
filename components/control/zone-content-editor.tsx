@@ -59,6 +59,8 @@ export function ZoneFields({
       );
     case "video":
       return <VideoFields content={content} onChange={onChange} />;
+    case "qr":
+      return <QrFields content={content} onChange={onChange} />;
     case "color":
       return (
         <label className="flex items-center justify-between gap-3 text-sm">
@@ -97,6 +99,39 @@ function TextFields({
           onChange={(e) => onChange({ ...content, subtitle: e.target.value })}
         />
       </Field>
+    </div>
+  );
+}
+
+function QrFields({
+  content,
+  onChange,
+}: {
+  content: Extract<ZoneContent, { type: "qr" }>;
+  onChange: (next: ZoneContent) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <label className={labelCls}>URL</label>
+        <input
+          type="url"
+          value={content.url}
+          onChange={(e) => onChange({ ...content, url: e.target.value })}
+          placeholder="https://results.example.com"
+          className={inputCls}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className={labelCls}>Label</label>
+        <input
+          type="text"
+          value={content.label}
+          onChange={(e) => onChange({ ...content, label: e.target.value })}
+          placeholder="Scan for results"
+          className={inputCls}
+        />
+      </div>
     </div>
   );
 }

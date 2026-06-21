@@ -1,3 +1,5 @@
+import QRCode from "qrcode";
+
 import { formatClock } from "@/lib/feed/format";
 import type { Split } from "@/lib/feed/types";
 
@@ -6,6 +8,19 @@ import { getImage, getVideo } from "./assets";
 import { tickerRows, type TickerRow } from "./feed-anim";
 import type { SurfaceInputs } from "./inputs";
 import { sponsorColumns, sponsorGrid } from "./sponsor-layout";
+
+/** Per-URL QR module cache so matrix generation runs once per distinct URL. */
+const qrCache = new Map<string, { data: Uint8Array; size: number }>();
+
+function getQrMatrix(url: string): { data: Uint8Array; size: number } {
+  let cached = qrCache.get(url);
+  if (!cached) {
+    const qr = QRCode.create(url, { errorCorrectionLevel: "M" });
+    cached = { data: qr.modules.data, size: qr.modules.size };
+    qrCache.set(url, cached);
+  }
+  return cached;
+}
 
 const FONT = "Inter, system-ui, sans-serif";
 
@@ -62,6 +77,9 @@ export function drawComponent(
       break;
     case "video":
       paintVideo(ctx, w, h, content);
+      break;
+    case "qr":
+      paintQr(ctx, w, h, content);
       break;
     case "color":
       ctx.fillStyle = content.color;
@@ -252,6 +270,41 @@ function paintText(
     ctx.fillStyle = "#52525b";
     ctx.fillText(content.subtitle!, w / 2, h * 0.74);
   }
+}
+
+const LABEL_H_FRAC = 0.22;
+
+function paintQr(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  content: Extract<ZoneContent, { type: "qr" }>,
+): void {
+  if (!content.url) return placeholder(ctx, 8, 8, w - 16, h - 16, "QR CODE");
+
+  const { data, size } = getQrMatrix(content.url);
+  const qrAreaH = h * (1 - LABEL_H_FRAC);
+  const cellPx = Math.max(1, Math.floor(Math.min(w, qrAreaH) / size));
+  const gridPx = cellPx * size;
+  const ox = Math.floor((w - gridPx) / 2);
+  const oy = Math.floor((qrAreaH - gridPx) / 2);
+
+  ctx.fillStyle = "#0a0a0a";
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (data[row * size + col]) {
+        ctx.fillRect(ox + col * cellPx, oy + row * cellPx, cellPx, cellPx);
+      }
+    }
+  }
+
+  const labelY = qrAreaH + (h * LABEL_H_FRAC) / 2;
+  const labelPx = fitFont(ctx, content.label, w * 0.9, h * LABEL_H_FRAC * 0.55, "500");
+  ctx.font = `500 ${labelPx}px ${FONT}`;
+  ctx.fillStyle = "#52525b";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(content.label, w / 2, labelY);
 }
 
 function drawSponsorLogo(

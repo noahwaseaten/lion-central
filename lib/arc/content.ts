@@ -47,6 +47,7 @@ export type ZoneContent =
   | ({ type: "image"; src: string } & ImageTransform)
   | { type: "video"; src: string; loop: boolean; muted: boolean; fit: Fit }
   | { type: "color"; color: string }
+  | { type: "qr"; url: string; label: string }
   | { type: "off" };
 
 export type ContentType = ZoneContent["type"];
@@ -58,6 +59,7 @@ export const CONTENT_TYPES: { type: ContentType; label: string }[] = [
   { type: "sponsors", label: "Sponsors" },
   { type: "image", label: "Image" },
   { type: "video", label: "Video" },
+  { type: "qr", label: "QR Code" },
   { type: "color", label: "Solid color" },
   { type: "off", label: "Off (blank)" },
 ];
@@ -86,6 +88,8 @@ export function defaultContent(type: ContentType): ZoneContent {
       return { type: "video", src: "", loop: true, muted: true, fit: "cover" };
     case "color":
       return { type: "color", color: "#0284c7" };
+    case "qr":
+      return { type: "qr", url: "", label: "Scan for results" };
     case "off":
       return { type: "off" };
   }
@@ -164,6 +168,12 @@ export function normalizeContent(raw: unknown): ZoneContent {
         loop: c.loop !== false,
         muted: c.muted !== false,
         fit: c.fit === "contain" ? "contain" : "cover",
+      };
+    case "qr":
+      return {
+        type: "qr",
+        url: typeof c.url === "string" ? c.url : "",
+        label: typeof c.label === "string" && c.label.length > 0 ? c.label : "Scan for results",
       };
     default:
       // Retired or unknown type (e.g. legacy "brand").
