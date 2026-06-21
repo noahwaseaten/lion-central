@@ -1,7 +1,7 @@
 "use client";
 
 import { IconContext } from "@phosphor-icons/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { OfflineBanner } from "@/components/control/offline-banner";
 import { useAnnouncement } from "@/hooks/use-announcement";
@@ -54,6 +54,22 @@ export function ArcWorkspace() {
   const { elapsed, running, start, pause, reset, setElapsedMs } = useRaceClock();
   const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
   const { announcement, send: sendAnnouncement, cancel: cancelAnnouncement } = useAnnouncement();
+
+  // Ctrl/Cmd+Z cancels an active announcement.
+  const announcementRef = useRef(announcement);
+  const cancelRef = useRef(cancelAnnouncement);
+  announcementRef.current = announcement;
+  cancelRef.current = cancelAnnouncement;
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && announcementRef.current) {
+        e.preventDefault();
+        cancelRef.current();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const [selected, setSelected] = useState<Selection | null>(null);
 

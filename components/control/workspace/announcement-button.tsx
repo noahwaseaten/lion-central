@@ -127,7 +127,7 @@ function IdleState({
     <div className="flex flex-col gap-3">
       <div>
         <h3 className="text-sm font-semibold">Send announcement</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">Overrides all surfaces for the selected duration.</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Overrides the top bar for the selected duration. Press Ctrl+Z to cancel early.</p>
       </div>
 
       <div className="flex flex-col gap-1.5">

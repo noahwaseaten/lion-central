@@ -27,16 +27,6 @@ export function drawSurface(
   ctx.fillStyle = inputs.config.background || "#ffffff";
   ctx.fillRect(0, 0, surface.w, surface.h);
 
-  // Background pulse: faint split-coloured wash that decays over 2 s when a new athlete arrives.
-  const PULSE_MS = 2000;
-  if (inputs.feed.lastArrivalMs > 0 && inputs.feed.lastArrivalSplit) {
-    const pulseFade = Math.max(0, 1 - (tMs - inputs.feed.lastArrivalMs) / PULSE_MS);
-    if (pulseFade > 0) {
-      ctx.fillStyle = hexA(SPLIT_COLOR[inputs.feed.lastArrivalSplit], 0.09 * pulseFade);
-      ctx.fillRect(0, 0, surface.w, surface.h);
-    }
-  }
-
   const components = inputs.config.surfaces[surfaceId] ?? [];
   for (const comp of components) {
     const rect: Rect = {
@@ -49,8 +39,19 @@ export function drawSurface(
     drawComponent(ctx, rect, comp.content, inputs, tMs, comp.id);
   }
 
-  // Announcement overlay — drawn last so it covers all components.
-  if (inputs.announcement) {
+  // Background pulse: faint split-coloured wash painted AFTER components so it
+  // composites uniformly over the whole surface (including feed edge-fades).
+  const PULSE_MS = 2000;
+  if (inputs.feed.lastArrivalMs > 0 && inputs.feed.lastArrivalSplit) {
+    const pulseFade = Math.max(0, 1 - (tMs - inputs.feed.lastArrivalMs) / PULSE_MS);
+    if (pulseFade > 0) {
+      ctx.fillStyle = hexA(SPLIT_COLOR[inputs.feed.lastArrivalSplit], 0.09 * pulseFade);
+      ctx.fillRect(0, 0, surface.w, surface.h);
+    }
+  }
+
+  // Announcement overlay — topbar only, drawn last so it covers all components.
+  if (inputs.announcement && surfaceId === "topbar") {
     paintAnnouncement(ctx, surface.w, surface.h, inputs.announcement);
   }
 }
