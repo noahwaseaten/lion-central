@@ -1,0 +1,9 @@
+⚠ Port 3000 is in use by process 26996, using available port 3001 instead.
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          26996
+- Dir:          C:\Users\diego\Desktop\code stuff\lion-central
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 26996 /F to stop it.

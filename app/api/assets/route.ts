@@ -24,17 +24,17 @@ export async function POST(request: Request) {
   }
 
   const { name, dataUrl, folder } = body;
-  if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
-    return NextResponse.json({ error: "Expected an image data URL" }, { status: 400 });
+  if (typeof dataUrl !== "string" || !/^data:(image|video)\//.test(dataUrl)) {
+    return NextResponse.json({ error: "Expected an image or video data URL" }, { status: 400 });
   }
 
   try {
-    const asset = await saveDataUrl(dataUrl, typeof name === "string" ? name : "logo");
+    const asset = await saveDataUrl(dataUrl, typeof name === "string" ? name : "asset");
     if (typeof folder === "string" && folder.trim()) {
       await moveAsset(asset.id, folder.trim());
     }
     return NextResponse.json({ asset });
   } catch {
-    return NextResponse.json({ error: "Could not save the logo" }, { status: 500 });
+    return NextResponse.json({ error: "Could not save the asset" }, { status: 500 });
   }
 }

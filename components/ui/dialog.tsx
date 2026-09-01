@@ -41,7 +41,7 @@ function DialogPopup({
       <DialogPrimitive.Popup
         className={cn(
           "fixed z-50 rounded-xl border border-border bg-card shadow-2xl shadow-black/60 outline-none",
-          "transition-[left,top,width,height,transform,opacity] duration-300 ease-in-out",
+          "transition-[left,top,width,height,transform,opacity] duration-[420ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
           !positionStyle && "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           "data-[starting-style]:opacity-0",
           "data-[ending-style]:opacity-0",

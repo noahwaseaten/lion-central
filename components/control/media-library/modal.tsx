@@ -1,7 +1,7 @@
 "use client";
 
-import { MagnifyingGlass } from "@phosphor-icons/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowsOut, MagnifyingGlass } from "@phosphor-icons/react";
+import { useMemo, useState } from "react";
 
 import { Dialog, DialogClose, DialogPopup, DialogTitle } from "@/components/ui/dialog";
 import { useLogoLibrary } from "@/hooks/use-logo-library";
@@ -11,21 +11,23 @@ import { AssetGrid } from "./asset-grid";
 import { FolderSidebar } from "./folder-sidebar";
 import { UploadZone } from "./upload-zone";
 
-const PREVIEW_WIDTH = 340;
+const PREVIEW_WIDTH = 380;
 const TOOLBAR_HEIGHT = 48;
 const PREVIEW_MARGIN = 16;
-const PREVIEW_DURATION_MS = 15_000;
+
+// Shared easing so the panel resize and the sidebar collapse move as one piece.
+const DOCK_MOTION = "transition-all duration-[420ms] ease-[cubic-bezier(0.16,1,0.3,1)]";
 
 export function MediaLibraryModal({
   open,
   onOpenChange,
-  mode,
   selected,
   onPick,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  mode: "single" | "multi";
+  /** Kept for caller compatibility; docking applies to both single and multi picks. */
+  mode?: "single" | "multi";
   selected: string[];
   onPick: (url: string) => void;
 }) {
@@ -45,22 +47,12 @@ export function MediaLibraryModal({
 
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [previewActive, setPreviewActive] = useState(false);
-  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Docked = the slim quick-picker that sits aside so the arc stays visible.
+  const [docked, setDocked] = useState(false);
 
-  // Clear timer on unmount
-  useEffect(() => {
-    return () => {
-      if (previewTimer.current) clearTimeout(previewTimer.current);
-    };
-  }, []);
-
-  // Wrap onOpenChange so closing always exits preview and clears the timer
+  // Closing always returns to the full centered library for next time.
   const handleOpenChange = (next: boolean) => {
-    if (!next) {
-      setPreviewActive(false);
-      if (previewTimer.current) clearTimeout(previewTimer.current);
-    }
+    if (!next) setDocked(false);
     onOpenChange(next);
   };
 
@@ -80,64 +72,79 @@ export function MediaLibraryModal({
 
   const handlePick = (url: string) => {
     onPick(url);
-    if (mode === "single") {
-      // Enter/extend preview mode instead of auto-closing
-      setPreviewActive(true);
-      if (previewTimer.current) clearTimeout(previewTimer.current);
-      previewTimer.current = setTimeout(() => {
-        setPreviewActive(false);
-      }, PREVIEW_DURATION_MS);
-    }
+    // Dock aside so the operator can watch the arc update; stays put until they
+    // expand back to the full library or close it. No timed snap-back.
+    setDocked(true);
   };
 
-  // Compute inline position for preview mode — always use left/top so CSS can
-  // transition between the two states using consistent units.
-  const previewPositionStyle: React.CSSProperties | undefined = previewActive
+  // Both states use the same inline properties (left/top/width/height/transform)
+  // so the popup can transition smoothly between them.
+  const positionStyle: React.CSSProperties = docked
     ? {
-        right: `${PREVIEW_MARGIN}px`,
+        left: `calc(100vw - ${PREVIEW_WIDTH + PREVIEW_MARGIN}px)`,
         top: `${TOOLBAR_HEIGHT + PREVIEW_MARGIN}px`,
-        left: "auto",
         width: `${PREVIEW_WIDTH}px`,
         height: `calc(100dvh - ${TOOLBAR_HEIGHT + PREVIEW_MARGIN * 2}px)`,
         transform: "none",
       }
-    : undefined;
+    : {
+        left: "50%",
+        top: "50%",
+        width: "min(900px, 90vw)",
+        height: "80vh",
+        transform: "translate(-50%, -50%)",
+      };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogPopup
-        className={cn(
-          "flex flex-col overflow-hidden",
-          !previewActive && "h-[80vh] w-[min(900px,90vw)]",
-        )}
-        backdropHidden={previewActive}
-        positionStyle={previewPositionStyle}
+        className="flex flex-col overflow-hidden"
+        backdropHidden={docked}
+        positionStyle={positionStyle}
       >
-        <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3">
-          <DialogTitle>Media library</DialogTitle>
-          <div className="flex flex-1 items-center gap-2 rounded-md border border-input bg-background px-2.5">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
+          <DialogTitle className="shrink-0">Media library</DialogTitle>
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-input bg-background px-2.5">
             <MagnifyingGlass className="size-3.5 shrink-0 text-muted-foreground" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="h-7 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="h-7 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
+          {docked && (
+            <button
+              type="button"
+              onClick={() => setDocked(false)}
+              aria-label="Expand to full library"
+              className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4"
+            >
+              <ArrowsOut />
+            </button>
+          )}
           <DialogClose />
         </div>
 
         <div className="flex min-h-0 flex-1">
-          <aside className="w-40 shrink-0 overflow-y-auto border-r border-border">
-            <FolderSidebar
-              folders={folders}
-              active={activeFolder}
-              onSelect={setActiveFolder}
-              onCreate={(name) => void createFolder(name)}
-              onRename={(old, next) => void renameFolder(old, next)}
-              onDelete={(name) => void deleteFolder(name)}
-              onMove={(id, folder) => void moveAsset(id, folder)}
-            />
+          <aside
+            className={cn(
+              "shrink-0 overflow-hidden border-border",
+              DOCK_MOTION,
+              docked ? "w-0 border-r-0 opacity-0" : "w-40 border-r opacity-100",
+            )}
+          >
+            <div className="w-40 h-full">
+              <FolderSidebar
+                folders={folders}
+                active={activeFolder}
+                onSelect={setActiveFolder}
+                onCreate={(name) => void createFolder(name)}
+                onRename={(old, next) => void renameFolder(old, next)}
+                onDelete={(name) => void deleteFolder(name)}
+                onMove={(id, folder) => void moveAsset(id, folder)}
+              />
+            </div>
           </aside>
 
           <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
@@ -148,7 +155,7 @@ export function MediaLibraryModal({
               <AssetGrid
                 assets={filteredAssets}
                 selected={selected}
-                folders={folders}
+                folders={docked ? [] : folders}
                 onPick={handlePick}
                 onDelete={(id) => void remove(id)}
                 onMove={(id, folder) => void moveAsset(id, folder)}

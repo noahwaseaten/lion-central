@@ -1,6 +1,25 @@
 /** Object-fit behaviour for image/video components. */
 export type Fit = "contain" | "cover";
 
+/**
+ * A soft drop shadow rendered behind an image/logo, so a light or white mark
+ * stays visible against any background (including a bright animated video) —
+ * the shadow follows the image's own alpha silhouette, not a bounding box, so
+ * a transparent-background logo gets a shadow that hugs its actual shape.
+ */
+export interface ImageShadow {
+  enabled: boolean;
+  color: string;
+  /** Blur radius, px (0–60). */
+  blur: number;
+  /** 0–1. */
+  opacity: number;
+}
+
+export function defaultShadow(): ImageShadow {
+  return { enabled: false, color: "#000000", blur: 12, opacity: 0.6 };
+}
+
 /** Crop/place transform shared by image components and individual sponsor logos. */
 export interface ImageTransform {
   fit: Fit;
@@ -12,6 +31,7 @@ export interface ImageTransform {
   padding: number;
   /** Solid fill behind the image (for white/transparent logos); null = none. */
   background: string | null;
+  shadow: ImageShadow;
 }
 
 /** One sponsor logo: a source plus its own crop/place transform. */
@@ -19,9 +39,9 @@ export interface SponsorItem extends ImageTransform {
   src: string;
 }
 
-/** A default (identity) transform: contain-fit, no zoom/pan/padding, no background. */
+/** A default (identity) transform: contain-fit, no zoom/pan/padding, no background/shadow. */
 export function defaultTransform(): ImageTransform {
-  return { fit: "contain", scale: 1, offset: { x: 0, y: 0 }, padding: 0, background: null };
+  return { fit: "contain", scale: 1, offset: { x: 0, y: 0 }, padding: 0, background: null, shadow: defaultShadow() };
 }
 
 /**
@@ -29,6 +49,16 @@ export function defaultTransform(): ImageTransform {
  * placed component, so the same content shows on the 2D workspace stage and on
  * the physical output.
  */
+/** Operator-set conditions icon — kept to a small, unambiguous set. */
+export type WeatherCondition = "sunny" | "cloudy" | "rain" | "wind";
+
+export const WEATHER_CONDITIONS: { value: WeatherCondition; label: string }[] = [
+  { value: "sunny", label: "Sunny" },
+  { value: "cloudy", label: "Cloudy" },
+  { value: "rain", label: "Rain" },
+  { value: "wind", label: "Windy" },
+];
+
 export type ZoneContent =
   | { type: "feed" }
   | { type: "clock"; numberFlow: boolean }
@@ -48,6 +78,15 @@ export type ZoneContent =
   | { type: "video"; src: string; loop: boolean; muted: boolean; fit: Fit }
   | { type: "color"; color: string }
   | { type: "qr"; url: string; label: string }
+  | {
+      type: "weather";
+      /** Operator-set — no sensor/API wired up, matching the app's local-only, no-DB design. */
+      tempC: number;
+      windKph: number;
+      /** Short compass label, e.g. "NW"; blank = omitted. */
+      windDir: string;
+      condition: WeatherCondition;
+    }
   | { type: "off" };
 
 export type ContentType = ZoneContent["type"];
@@ -60,6 +99,7 @@ export const CONTENT_TYPES: { type: ContentType; label: string }[] = [
   { type: "image", label: "Image" },
   { type: "video", label: "Video" },
   { type: "qr", label: "QR Code" },
+  { type: "weather", label: "Weather" },
   { type: "color", label: "Solid color" },
   { type: "off", label: "Off (blank)" },
 ];
@@ -90,6 +130,8 @@ export function defaultContent(type: ContentType): ZoneContent {
       return { type: "color", color: "#0284c7" };
     case "qr":
       return { type: "qr", url: "", label: "Scan for results" };
+    case "weather":
+      return { type: "weather", tempC: 20, windKph: 10, windDir: "NW", condition: "sunny" };
     case "off":
       return { type: "off" };
   }
@@ -101,6 +143,20 @@ const num = (v: unknown, fallback: number): number =>
 const str = (v: unknown, fallback = ""): string => (typeof v === "string" ? v : fallback);
 
 const clampFrac = (v: number): number => (v < 0 ? 0 : v > 0.4 ? 0.4 : v);
+const clamp = (v: number, min: number, max: number): number => Math.min(max, Math.max(min, v));
+
+/** Coerce loose data into a complete ImageShadow, back-filling missing fields. */
+function normalizeShadow(raw: unknown): ImageShadow {
+  const def = defaultShadow();
+  if (!raw || typeof raw !== "object") return def;
+  const s = raw as Record<string, unknown>;
+  return {
+    enabled: s.enabled === true,
+    color: typeof s.color === "string" ? s.color : def.color,
+    blur: clamp(num(s.blur, def.blur), 0, 60),
+    opacity: clamp(num(s.opacity, def.opacity), 0, 1),
+  };
+}
 
 /** Coerce loose data into a complete ImageTransform, back-filling missing fields. */
 function normalizeTransform(raw: Record<string, unknown>): ImageTransform {
@@ -111,6 +167,7 @@ function normalizeTransform(raw: Record<string, unknown>): ImageTransform {
     offset: { x: num(off.x, 0), y: num(off.y, 0) },
     padding: clampFrac(num(raw.padding, 0)),
     background: typeof raw.background === "string" ? raw.background : null,
+    shadow: normalizeShadow(raw.shadow),
   };
 }
 
@@ -175,11 +232,21 @@ export function normalizeContent(raw: unknown): ZoneContent {
         url: typeof c.url === "string" ? c.url : "",
         label: typeof c.label === "string" && c.label.length > 0 ? c.label : "Scan for results",
       };
+    case "weather": {
+      const conditions = WEATHER_CONDITIONS.map((w) => w.value);
+      return {
+        type: "weather",
+        tempC: num(c.tempC, 20),
+        windKph: Math.max(0, num(c.windKph, 10)),
+        windDir: typeof c.windDir === "string" ? c.windDir.slice(0, 4).toUpperCase() : "NW",
+        condition: conditions.includes(c.condition as WeatherCondition) ? (c.condition as WeatherCondition) : "sunny",
+      };
+    }
     default:
       // Retired or unknown type (e.g. legacy "brand").
       return defaultContent("text");
   }
 }
 
-export type { ArcComponent, ArcConfig, NormRect } from "./layout-model";
+export type { ArcComponent, ArcConfig, BackgroundConfig, NormRect } from "./layout-model";
 export { DEFAULT_ARC_CONFIG } from "./layout-model";

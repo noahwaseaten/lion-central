@@ -40,7 +40,7 @@ export default async function OutputPage({
         <SurfaceOutput surfaceId={surface} />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-neutral-500">
-          <p className="text-lg font-medium">Unknown surface "{surface}".</p>
+          <p className="text-lg font-medium">Unknown surface &ldquo;{surface}&rdquo;.</p>
           <p className="text-sm">
             Try:{" "}
             {SURFACES.map((s, i) => (

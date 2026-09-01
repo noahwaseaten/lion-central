@@ -1,7 +1,7 @@
 // lib/arc/content.test.ts
 import { describe, expect, it } from "vitest";
 
-import { normalizeContent } from "./content";
+import { defaultShadow, normalizeContent } from "./content";
 
 describe("normalizeContent — sponsors items", () => {
   it("migrates legacy images: string[] to items with default transforms", () => {
@@ -16,8 +16,8 @@ describe("normalizeContent — sponsors items", () => {
     expect(out.type).toBe("sponsors");
     if (out.type !== "sponsors") return;
     expect(out.items).toEqual([
-      { src: "a.png", fit: "contain", scale: 1, offset: { x: 0, y: 0 }, padding: 0, background: null },
-      { src: "b.png", fit: "contain", scale: 1, offset: { x: 0, y: 0 }, padding: 0, background: null },
+      { src: "a.png", fit: "contain", scale: 1, offset: { x: 0, y: 0 }, padding: 0, background: null, shadow: defaultShadow() },
+      { src: "b.png", fit: "contain", scale: 1, offset: { x: 0, y: 0 }, padding: 0, background: null, shadow: defaultShadow() },
     ]);
   });
 
@@ -32,7 +32,7 @@ describe("normalizeContent — sponsors items", () => {
     });
     if (out.type !== "sponsors") return;
     expect(out.items[0]).toEqual({
-      src: "x.png", fit: "contain", scale: 2, offset: { x: 0, y: 0 }, padding: 0, background: null,
+      src: "x.png", fit: "contain", scale: 2, offset: { x: 0, y: 0 }, padding: 0, background: null, shadow: defaultShadow(),
     });
     expect(out.mode).toBe("rotate");
     expect(out.columns).toBe(3);
@@ -59,5 +59,21 @@ describe("normalizeContent — qr", () => {
   it("coerces missing url to empty string", () => {
     const out = normalizeContent({ type: "qr" });
     expect(out).toEqual({ type: "qr", url: "", label: "Scan for results" });
+  });
+});
+
+describe("normalizeContent — weather", () => {
+  it("keeps valid fields and uppercases/truncates the wind direction", () => {
+    const out = normalizeContent({ type: "weather", tempC: 14, windKph: 22, windDir: "south west", condition: "rain" });
+    expect(out).toEqual({ type: "weather", tempC: 14, windKph: 22, windDir: "SOUT", condition: "rain" });
+  });
+
+  it("falls back to defaults for missing/invalid fields instead of crashing", () => {
+    expect(normalizeContent({ type: "weather" })).toEqual({
+      type: "weather", tempC: 20, windKph: 10, windDir: "NW", condition: "sunny",
+    });
+    expect(normalizeContent({ type: "weather", windKph: -5, condition: "hurricane" })).toEqual({
+      type: "weather", tempC: 20, windKph: 0, windDir: "NW", condition: "sunny",
+    });
   });
 });

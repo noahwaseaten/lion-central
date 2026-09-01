@@ -11,11 +11,14 @@ export function NumberFlowClock({
   ms,
   running,
   fontPx,
+  direction = 1,
   color = "#0a0a0a",
 }: {
   ms: number;
   running: boolean;
   fontPx: number;
+  /** Count direction: 1 while counting up, -1 during a pre-race countdown. */
+  direction?: 1 | -1;
   color?: string;
 }) {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -32,13 +35,18 @@ export function NumberFlowClock({
       >
         {showH && (
           <>
-            <NumberFlow value={h} />
+            <NumberFlow value={h} trend={direction} />
             <span>:</span>
           </>
         )}
-        <NumberFlow value={m} format={showH ? { minimumIntegerDigits: 2 } : undefined} />
+        {/* minimumIntegerDigits always on (not just when hours show) so minutes read
+            "00" not "0" at the top of every hour — matches the canvas clock's format. */}
+        <NumberFlow value={m} format={{ minimumIntegerDigits: 2 }} trend={direction} />
         <span>:</span>
-        <NumberFlow value={s} format={{ minimumIntegerDigits: 2 }} />
+        {/* Forcing `trend` to the clock's actual count direction (instead of NumberFlow's
+            default per-digit auto-detection) keeps every digit spinning the same way
+            through a carry (e.g. 2:59 -> 3:00) instead of flipping direction mid-roll. */}
+        <NumberFlow value={s} format={{ minimumIntegerDigits: 2 }} trend={direction} />
       </div>
     </NumberFlowGroup>
   );

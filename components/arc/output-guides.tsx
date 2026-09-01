@@ -117,7 +117,7 @@ export function OutputGuides({ label, w, h }: { label: string; w: number; h: num
           });
         }}
         className="fixed left-2 top-2 rounded-md border border-white/30 bg-black/60 px-2 py-1 text-xs font-medium text-white outline-none transition-opacity hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white"
-        style={{ opacity: idle ? 0 : 1 }}
+        style={{ opacity: idle ? 1 : 0 }}
         aria-label={on ? "Hide alignment guides (G)" : "Show alignment guides (G)"}
       >
         {on ? "Guides on (G)" : "Guides off (G)"}

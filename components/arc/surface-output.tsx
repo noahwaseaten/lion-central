@@ -20,8 +20,12 @@ export function SurfaceOutput({ surfaceId }: { surfaceId: SurfaceId }) {
   const inputs = useArcInputs();
   useSurfaceCanvas(surfaceId, ref, inputs);
 
-  const surface = getSurface(surfaceId);
-  if (!surface) return null;
+  // Native size is operator-editable (see the workspace's canvas), so read the
+  // live value rather than the static default — the label still comes from
+  // `getSurface` since that never changes.
+  const label = getSurface(surfaceId)?.label;
+  const surface = inputs.config.surfaceSizes[surfaceId];
+  if (!surface || !label) return null;
 
   return (
     <ScaleToFit width={surface.w} height={surface.h}>
@@ -33,7 +37,7 @@ export function SurfaceOutput({ surfaceId }: { surfaceId: SurfaceId }) {
           displayW={surface.w}
           displayH={surface.h}
         />
-        <OutputGuides label={surface.label} w={surface.w} h={surface.h} />
+        <OutputGuides label={label} w={surface.w} h={surface.h} />
       </div>
     </ScaleToFit>
   );

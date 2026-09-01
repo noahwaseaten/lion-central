@@ -1,6 +1,12 @@
 import { defaultContent, normalizeContent, type ZoneContent } from "./content";
 import { SHOULDER_W, TOP_BAR } from "./layout";
-import { isSurfaceId, type SurfaceId, SURFACE_IDS } from "./surfaces";
+import {
+  defaultSurfaceSizes,
+  isSurfaceId,
+  type SurfaceId,
+  SURFACE_IDS,
+  type SurfaceSizes,
+} from "./surfaces";
 
 /** A rect normalized to its owning surface — each field is a 0–1 fraction. */
 export interface NormRect {
@@ -27,14 +33,54 @@ export interface ArcComponent {
 }
 
 /**
+ * The arc's shared background: a flat color, or a looping video treated as one
+ * continuous picture across the whole physical arc — each surface shows its own
+ * crop of it (see `lib/arc/render/background.ts`), not four independent copies.
+ */
+export interface BackgroundConfig {
+  mode: "solid" | "video";
+  /** Solid fill; also the fallback shown before the video loads / if none is set. */
+  color: string;
+  /** Asset URL of the background video (from the media library); empty = none picked. */
+  videoSrc: string;
+}
+
+export function defaultBackground(): BackgroundConfig {
+  return { mode: "solid", color: "#ffffff", videoSrc: "" };
+}
+
+/** Coerce loosely-shaped (persisted, older bare-hex-string, or preset) input into a valid `BackgroundConfig`. */
+function normalizeBackground(raw: unknown): BackgroundConfig {
+  const def = defaultBackground();
+  if (typeof raw === "string") return { ...def, color: raw }; // legacy shape: a bare hex string
+  if (!raw || typeof raw !== "object") return def;
+  const b = raw as Record<string, unknown>;
+  return {
+    mode: b.mode === "video" ? "video" : "solid",
+    color: typeof b.color === "string" ? b.color : def.color,
+    videoSrc: typeof b.videoSrc === "string" ? b.videoSrc : def.videoSrc,
+  };
+}
+
+/**
  * The full arc configuration: every surface's ordered list of components.
  * Array order is paint / z order — the last component draws on top. Persisted to
  * localStorage and synced across tabs so an operator change updates every output.
  */
 export interface ArcConfig {
-  /** Arc surface background (the physical arc is white). */
-  background: string;
+  background: BackgroundConfig;
   surfaces: Record<SurfaceId, ArcComponent[]>;
+  /** Per-surface resolution (px) — editable in the workspace; drives every renderer. */
+  surfaceSizes: SurfaceSizes;
+}
+
+/** Sane bounds for an operator-edited surface resolution. */
+const MIN_SURFACE_PX = 16;
+const MAX_SURFACE_PX = 8000;
+
+export function clampSurfaceSize(w: number, h: number): { w: number; h: number } {
+  const clamp = (v: number) => Math.round(Math.min(MAX_SURFACE_PX, Math.max(MIN_SURFACE_PX, v)));
+  return { w: clamp(w), h: clamp(h) };
 }
 
 let idSeq = 0;
@@ -76,7 +122,8 @@ const SHOULDER_FRAC = SHOULDER_W / TOP_BAR.w; // ≈ 0.246
 /** Out-of-the-box layout: shoulders flank a full-height feed, legs are logo walls. */
 export function defaultConfig(): ArcConfig {
   return {
-    background: "#ffffff",
+    background: defaultBackground(),
+    surfaceSizes: defaultSurfaceSizes(),
     surfaces: {
       clock: [makeComponent(defaultContent("clock"), { x: 0, y: 0, w: 1, h: 1 })],
       topbar: [
@@ -147,10 +194,25 @@ export function normalizeComponent(raw: unknown): ArcComponent {
  * - legacy shape (`zones`) → convert each zone to a component (brand dropped);
  * - anything else → the default layout.
  */
+/** Coerce a loosely-shaped `surfaceSizes` (persisted/preset) into a full, valid table. */
+function normalizeSurfaceSizes(raw: unknown): SurfaceSizes {
+  const sizes = defaultSurfaceSizes();
+  if (!raw || typeof raw !== "object") return sizes;
+  for (const [id, val] of Object.entries(raw as Record<string, unknown>)) {
+    if (!isSurfaceId(id) || !val || typeof val !== "object") continue;
+    const v = val as Record<string, unknown>;
+    if (typeof v.w === "number" && typeof v.h === "number" && Number.isFinite(v.w) && Number.isFinite(v.h)) {
+      sizes[id] = clampSurfaceSize(v.w, v.h);
+    }
+  }
+  return sizes;
+}
+
 export function migrate(parsed: unknown): ArcConfig {
   if (!parsed || typeof parsed !== "object") return defaultConfig();
   const p = parsed as Record<string, unknown>;
-  const background = typeof p.background === "string" ? p.background : "#ffffff";
+  const background = normalizeBackground(p.background);
+  const surfaceSizes = normalizeSurfaceSizes(p.surfaceSizes);
 
   if (p.surfaces && typeof p.surfaces === "object") {
     const surfaces = emptySurfaces();
@@ -159,7 +221,7 @@ export function migrate(parsed: unknown): ArcConfig {
         surfaces[id] = list.map(normalizeComponent);
       }
     }
-    return { background, surfaces };
+    return { background, surfaceSizes, surfaces };
   }
 
   if (p.zones && typeof p.zones === "object") {
@@ -172,8 +234,8 @@ export function migrate(parsed: unknown): ArcConfig {
     // Any surface the old config didn't cover keeps the default layout.
     const fallback = defaultConfig();
     for (const id of SURFACE_IDS) if (surfaces[id].length === 0) surfaces[id] = fallback.surfaces[id];
-    return { background, surfaces };
+    return { background, surfaceSizes, surfaces };
   }
 
-  return { ...defaultConfig(), background };
+  return { ...defaultConfig(), background, surfaceSizes };
 }

@@ -9,6 +9,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -17,15 +18,18 @@ import { Button } from "@/components/ui/button";
 import type { ContentType } from "@/lib/arc/content";
 import {
   type ArcConfig,
+  clampSurfaceSize,
   type NormRect,
   type Selection,
 } from "@/lib/arc/layout-model";
 import type { SurfaceInputs } from "@/lib/arc/render/inputs";
 import type { Guide } from "@/lib/arc/snapping";
 import {
+  arrangePlacements,
+  boundingBox,
   fitScale,
-  getPlacement,
-  STAGE_BOX,
+  placementMap,
+  type SurfacePlacement,
 } from "@/lib/arc/stage-layout";
 import { SURFACES, type SurfaceId } from "@/lib/arc/surfaces";
 import { cn } from "@/lib/utils";
@@ -79,6 +83,7 @@ export function ArcStage({
   setComponentRect,
   addComponent,
   removeComponent,
+  setSurfaceSize,
 }: {
   config: ArcConfig;
   inputs: SurfaceInputs;
@@ -87,6 +92,7 @@ export function ArcStage({
   setComponentRect: (surface: SurfaceId, id: string, rect: NormRect) => void;
   addComponent: (surface: SurfaceId, type: ContentType) => void;
   removeComponent: (surface: SurfaceId, id: string) => void;
+  setSurfaceSize: (surface: SurfaceId, w: number, h: number) => void;
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const { w, h } = useSize(viewportRef);
@@ -95,10 +101,20 @@ export function ArcStage({
   const [spaceHeld, setSpaceHeld] = useState(false);
   const [guides, setGuides] = useState<ActiveGuides | null>(null);
 
-  const fitView = useCallback((W: number, H: number): View => {
-    const scale = fitScale(W, H);
-    return { scale, tx: (W - STAGE_BOX.w * scale) / 2, ty: (H - STAGE_BOX.h * scale) / 2 };
-  }, []);
+  // Each surface's resolution is operator-editable, so the whole arrangement —
+  // and everything derived from it below — is recomputed from the live config
+  // instead of the static defaults.
+  const placements = useMemo(() => arrangePlacements(config.surfaceSizes), [config.surfaceSizes]);
+  const box = useMemo(() => boundingBox(placements), [placements]);
+  const placementById = useMemo(() => placementMap(placements), [placements]);
+
+  const fitView = useCallback(
+    (W: number, H: number): View => {
+      const scale = fitScale(W, H, 0.9, box);
+      return { scale, tx: (W - box.w * scale) / 2, ty: (H - box.h * scale) / 2 };
+    },
+    [box],
+  );
 
   useLayoutEffect(() => {
     if (w > 0 && h > 0) {
@@ -273,14 +289,14 @@ export function ArcStage({
             className="absolute left-0 top-0 origin-top-left will-change-transform"
             style={{
               transform: `translate(${view.tx}px, ${view.ty}px)`,
-              width: STAGE_BOX.w * view.scale,
-              height: STAGE_BOX.h * view.scale,
+              width: box.w * view.scale,
+              height: box.h * view.scale,
             }}
           >
-            <StageDecor scale={view.scale} />
+            <StageDecor scale={view.scale} top={placementById.get("topbar")} />
 
             {SURFACES.map((surface) => {
-              const p = getPlacement(surface.id);
+              const p = placementById.get(surface.id);
               if (!p) return null;
               return (
                 <ArcSurface
@@ -297,11 +313,20 @@ export function ArcStage({
 
             {/* component overlays + per-surface add affordance */}
             {SURFACES.map((surface) => {
-              const p = getPlacement(surface.id);
+              const p = placementById.get(surface.id);
               if (!p) return null;
               const list = config.surfaces[surface.id] ?? [];
+              const surfaceSelected = selected?.surface === surface.id && selected.id === null;
               return (
                 <div key={surface.id}>
+                  {surfaceSelected && (
+                    <SurfaceSizeControls
+                      placement={p}
+                      scale={view.scale}
+                      onResize={(nw, nh) => setSurfaceSize(surface.id, nw, nh)}
+                    />
+                  )}
+
                   {list.map((comp) => (
                     <ComponentFrame
                       key={comp.id}
@@ -361,8 +386,7 @@ export function ArcStage({
 }
 
 /** Gantry baseline + timing-tape ticks — grounds the arc as a physical structure. */
-function StageDecor({ scale }: { scale: number }) {
-  const top = getPlacement("topbar");
+function StageDecor({ scale, top }: { scale: number; top: SurfacePlacement | undefined }) {
   const ticks = 33;
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -386,6 +410,105 @@ function StageDecor({ scale }: { scale: number }) {
           />
         ))}
     </div>
+  );
+}
+
+/**
+ * Shown on the selected surface's frame: a numeric W×H readout (click to type an
+ * exact resolution) and a drag handle on the bottom-right corner for freeform
+ * resize — the surface's physical resolution, editable right on the canvas.
+ */
+function SurfaceSizeControls({
+  placement,
+  scale,
+  onResize,
+}: {
+  placement: SurfacePlacement;
+  scale: number;
+  onResize: (w: number, h: number) => void;
+}) {
+  const drag = useRef<{ px: number; py: number; w: number; h: number } | null>(null);
+  const [wDraft, setWDraft] = useState(String(Math.round(placement.w)));
+  const [hDraft, setHDraft] = useState(String(Math.round(placement.h)));
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the inputs in sync with the surface's live size (e.g. while dragging the handle)
+    setWDraft(String(Math.round(placement.w)));
+    setHDraft(String(Math.round(placement.h)));
+  }, [placement.w, placement.h]);
+
+  const begin = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    drag.current = { px: e.clientX, py: e.clientY, w: placement.w, h: placement.h };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+  const onMove = (e: PointerEvent) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = (e.clientX - d.px) / scale;
+    const dy = (e.clientY - d.py) / scale;
+    onResize(d.w + dx, d.h + dy);
+  };
+  const onUp = () => {
+    drag.current = null;
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+  };
+
+  const commit = () => {
+    const nw = Number(wDraft);
+    const nh = Number(hDraft);
+    const { w, h } = clampSurfaceSize(
+      Number.isFinite(nw) && nw > 0 ? nw : placement.w,
+      Number.isFinite(nh) && nh > 0 ? nh : placement.h,
+    );
+    onResize(w, h);
+    setWDraft(String(w));
+    setHDraft(String(h));
+  };
+
+  return (
+    <>
+      <div
+        data-stage-control
+        className="absolute z-40 flex items-center gap-1 rounded-md border border-border bg-popover px-1.5 py-1 text-[11px] font-medium text-popover-foreground shadow-lg shadow-black/40"
+        style={{ left: placement.x * scale, top: placement.y * scale - 30 }}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <input
+          value={wDraft}
+          onChange={(e) => setWDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+          inputMode="numeric"
+          aria-label="Surface width (px)"
+          className="w-11 rounded bg-transparent text-right tabular-nums outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
+        <span className="text-muted-foreground">×</span>
+        <input
+          value={hDraft}
+          onChange={(e) => setHDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+          inputMode="numeric"
+          aria-label="Surface height (px)"
+          className="w-11 rounded bg-transparent tabular-nums outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
+      </div>
+
+      <span
+        data-stage-control
+        onPointerDown={begin}
+        style={{
+          cursor: "nwse-resize",
+          left: (placement.x + placement.w) * scale,
+          top: (placement.y + placement.h) * scale,
+        }}
+        className="absolute z-40 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-[2px] border border-signal bg-background shadow-sm"
+      />
+    </>
   );
 }
 

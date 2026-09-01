@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { clampRect, defaultConfig, migrate, normalizeComponent } from "./layout-model";
+import { defaultSurfaceSizes } from "./surfaces";
+import { clampRect, clampSurfaceSize, defaultConfig, migrate, normalizeComponent } from "./layout-model";
 
 describe("migrate", () => {
   it("returns the default layout for empty / junk input", () => {
@@ -25,7 +26,7 @@ describe("migrate", () => {
       },
     };
     const cfg = migrate(legacy);
-    expect(cfg.background).toBe("#101010");
+    expect(cfg.background).toEqual({ mode: "solid", color: "#101010", videoSrc: "" });
     // brand dropped → top bar has shoulders + feed, no brand component
     const types = cfg.surfaces.topbar.map((c) => c.content.type);
     expect(types).not.toContain("brand");
@@ -58,6 +59,54 @@ describe("migrate", () => {
   it("maps a retired content type to text rather than crashing", () => {
     const comp = normalizeComponent({ content: { type: "brand" }, rect: {} });
     expect(comp.content.type).toBe("text");
+  });
+});
+
+describe("migrate — surfaceSizes", () => {
+  it("defaults to native resolution for empty / junk input", () => {
+    expect(migrate(null).surfaceSizes).toEqual(defaultSurfaceSizes());
+    expect(migrate({}).surfaceSizes).toEqual(defaultSurfaceSizes());
+  });
+
+  it("carries forward a valid persisted resolution", () => {
+    const cfg = migrate({ surfaces: {}, surfaceSizes: { topbar: { w: 1920, h: 300 } } });
+    expect(cfg.surfaceSizes.topbar).toEqual({ w: 1920, h: 300 });
+    // untouched surfaces keep the default
+    expect(cfg.surfaceSizes.clock).toEqual(defaultSurfaceSizes().clock);
+  });
+
+  it("falls back to the default for a garbage entry instead of crashing", () => {
+    const cfg = migrate({ surfaces: {}, surfaceSizes: { "leg-left": { w: "big", h: null } } });
+    expect(cfg.surfaceSizes["leg-left"]).toEqual(defaultSurfaceSizes()["leg-left"]);
+  });
+});
+
+describe("migrate — background", () => {
+  it("converts a legacy bare hex string to a solid BackgroundConfig", () => {
+    expect(migrate({ background: "#123456" }).background).toEqual(
+      expect.objectContaining({ mode: "solid", color: "#123456" }),
+    );
+  });
+
+  it("passes through a valid video config", () => {
+    const cfg = migrate({ background: { mode: "video", color: "#fff", videoSrc: "/assets/bg.mp4" } });
+    expect(cfg.background).toEqual({ mode: "video", color: "#fff", videoSrc: "/assets/bg.mp4" });
+  });
+
+  it("falls back to the default for junk instead of crashing", () => {
+    expect(migrate({ background: 42 }).background).toEqual(defaultConfig().background);
+    expect(migrate({}).background).toEqual(defaultConfig().background);
+  });
+});
+
+describe("clampSurfaceSize", () => {
+  it("keeps a reasonable size unchanged (rounded)", () => {
+    expect(clampSurfaceSize(1280.4, 256.6)).toEqual({ w: 1280, h: 257 });
+  });
+
+  it("clamps out-of-range values instead of allowing a zero/absurd surface", () => {
+    expect(clampSurfaceSize(0, -50)).toEqual({ w: 16, h: 16 });
+    expect(clampSurfaceSize(999999, 999999)).toEqual({ w: 8000, h: 8000 });
   });
 });
 

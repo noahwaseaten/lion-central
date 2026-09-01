@@ -12,8 +12,8 @@ import { useLastArrival } from "@/hooks/use-last-arrival";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { usePresets } from "@/hooks/use-presets";
 import { useRaceClock } from "@/hooks/use-race-clock";
-import { type ContentType, defaultContent } from "@/lib/arc/content";
-import type { Selection } from "@/lib/arc/layout-model";
+import { type ContentType, defaultContent, type ZoneContent } from "@/lib/arc/content";
+import type { NormRect, Selection } from "@/lib/arc/layout-model";
 import type { SurfaceInputs } from "@/lib/arc/render/inputs";
 import type { SurfaceId } from "@/lib/arc/surfaces";
 
@@ -21,6 +21,12 @@ import { ArcStage } from "./arc-stage";
 import { LayersPanel } from "./layers-panel";
 import { TopToolbar } from "./top-toolbar";
 import { ZoneInspector } from "./zone-inspector";
+
+/** Nudge a pasted component's rect so it doesn't land exactly on top of the copy. */
+function offsetRect(r: NormRect): NormRect {
+  const off = 0.03;
+  return { ...r, x: Math.min(1 - r.w, r.x + off), y: Math.min(1 - r.h, r.y + off) };
+}
 
 /**
  * The unified 2D Arc Control workspace: a toolbar, a layers rail, the interactive
@@ -33,6 +39,7 @@ export function ArcWorkspace() {
     isDirty,
     publish,
     setBackground,
+    setSurfaceSize,
     replaceConfig,
     addComponent,
     removeComponent,
@@ -40,6 +47,11 @@ export function ArcWorkspace() {
     setComponentRect,
     renameComponent,
     reorderComponent,
+    setSurfaceOrder,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useArcConfig("draft");
   const { builtins, custom, save, remove } = usePresets();
   const { settings, update } = useFeedSettings();
@@ -51,27 +63,88 @@ export function ArcWorkspace() {
     useFallbackAlways: settings.useFallbackAlways,
     online,
   });
-  const { elapsed, running, start, pause, reset, setElapsedMs } = useRaceClock();
+  const { elapsed, running, mode, direction, start, pause, reset, setElapsedMs, startCountdown } = useRaceClock();
   const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
-  const { announcement, send: sendAnnouncement, cancel: cancelAnnouncement } = useAnnouncement();
+  const {
+    announcement,
+    send: sendAnnouncement,
+    extend: extendAnnouncement,
+    cancel: cancelAnnouncement,
+  } = useAnnouncement();
 
-  // Ctrl/Cmd+Z cancels an active announcement.
+  const [selected, setSelected] = useState<Selection | null>(null);
+
+  // Keyboard shortcuts read the latest selection/config/clipboard via refs so the
+  // single document listener never needs to be torn down and re-added.
   const announcementRef = useRef(announcement);
   const cancelRef = useRef(cancelAnnouncement);
-  announcementRef.current = announcement;
-  cancelRef.current = cancelAnnouncement;
+  const selectedRef = useRef(selected);
+  const configRef = useRef(config);
+  const clipboardRef = useRef<{ content: ZoneContent; rect: NormRect } | null>(null);
+  useEffect(() => {
+    announcementRef.current = announcement;
+    cancelRef.current = cancelAnnouncement;
+    selectedRef.current = selected;
+    configRef.current = config;
+  });
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && announcementRef.current) {
+      // Works on both Windows/Linux (Ctrl) and Mac (Cmd).
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase(); // Shift turns e.key upper-case (e.g. "Z")
+
+      // Ctrl/Cmd+Z cancels an active announcement, regardless of focus.
+      if (key === "z" && !e.shiftKey && announcementRef.current) {
         e.preventDefault();
         cancelRef.current();
+        return;
+      }
+
+      // Let native text-field undo/copy/cut/paste run inside inputs and editable text.
+      const target = e.target as HTMLElement | null;
+      const isEditable =
+        !!target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      if (isEditable) return;
+
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
+      const sel = selectedRef.current;
+      const comp = sel?.id ? configRef.current.surfaces[sel.surface]?.find((c) => c.id === sel.id) : null;
+
+      if (key === "c" && comp) {
+        e.preventDefault();
+        clipboardRef.current = structuredClone({ content: comp.content, rect: comp.rect });
+        return;
+      }
+      if (key === "x" && comp && sel) {
+        e.preventDefault();
+        clipboardRef.current = structuredClone({ content: comp.content, rect: comp.rect });
+        removeComponent(sel.surface, comp.id);
+        setSelected(null);
+        return;
+      }
+      if (key === "v" && sel && clipboardRef.current) {
+        e.preventDefault();
+        const clip = structuredClone(clipboardRef.current);
+        const id = addComponent(sel.surface, clip.content, offsetRect(clip.rect));
+        setSelected({ surface: sel.surface, id });
       }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
-
-  const [selected, setSelected] = useState<Selection | null>(null);
+  }, [undo, redo, addComponent, removeComponent]);
 
   // Add a component of `type` to a surface and select it.
   const addAndSelect = useCallback(
@@ -82,10 +155,24 @@ export function ArcWorkspace() {
     [addComponent],
   );
 
+  // Clone an existing component onto the same surface, offset so it doesn't land
+  // exactly on top of the original, and select the copy. Backs both the layers
+  // panel's "Duplicate" row action and Ctrl/Cmd+C-then-V.
+  const duplicateComponent = useCallback(
+    (surface: SurfaceId, id: string) => {
+      const comp = config.surfaces[surface]?.find((c) => c.id === id);
+      if (!comp) return;
+      const clone = structuredClone({ content: comp.content, rect: comp.rect });
+      const newId = addComponent(surface, clone.content, offsetRect(clone.rect));
+      setSelected({ surface, id: newId });
+    },
+    [config, addComponent],
+  );
+
   const inputs: SurfaceInputs = {
     config,
     feed: { entries, status, lastArrivalMs, lastArrivalSplit },
-    clock: { ms: elapsed, running },
+    clock: { ms: elapsed, running, direction },
     announcement,
   };
 
@@ -97,12 +184,14 @@ export function ArcWorkspace() {
           setBackground={setBackground}
           feedSettings={settings}
           feedStatus={status}
-          clock={{ elapsed, running, start, pause, reset }}
+          clock={{ elapsed, running, mode, start, pause, reset }}
           onPublish={publish}
           isDirty={isDirty}
+          history={{ undo, redo, canUndo, canRedo }}
           announcementControls={{
             announcement,
             send: sendAnnouncement,
+            extend: extendAnnouncement,
             cancel: cancelAnnouncement,
           }}
           presets={{
@@ -130,11 +219,13 @@ export function ArcWorkspace() {
               selected={selected}
               onSelect={setSelected}
               addComponent={addAndSelect}
+              duplicateComponent={duplicateComponent}
               removeComponent={(surface, id) => {
                 removeComponent(surface, id);
                 setSelected((s) => (s?.id === id ? null : s));
               }}
-              reorderComponent={reorderComponent}
+              renameComponent={renameComponent}
+              setSurfaceOrder={setSurfaceOrder}
             />
           </aside>
 
@@ -146,6 +237,7 @@ export function ArcWorkspace() {
             setComponentRect={setComponentRect}
             addComponent={addAndSelect}
             removeComponent={removeComponent}
+            setSurfaceSize={setSurfaceSize}
           />
 
           <aside className="w-80 shrink-0 border-l border-border bg-card">
@@ -159,7 +251,7 @@ export function ArcWorkspace() {
               feedSettings={settings}
               updateFeed={update}
               feedStatus={status}
-              clock={{ elapsed, running, start, pause, reset, setElapsedMs }}
+              clock={{ elapsed, running, mode, start, pause, reset, setElapsedMs, startCountdown }}
             />
           </aside>
         </div>

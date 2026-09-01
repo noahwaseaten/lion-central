@@ -1,11 +1,11 @@
 "use client";
 
-import { CheckCircle, CloudArrowUp } from "@phosphor-icons/react";
+import { ArrowClockwise, ArrowCounterClockwise, CheckCircle, CloudArrowUp } from "@phosphor-icons/react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import type { FeedSettings } from "@/hooks/use-feed-settings";
-import type { ArcConfig } from "@/lib/arc/layout-model";
+import type { ArcConfig, BackgroundConfig } from "@/lib/arc/layout-model";
 import type { Preset } from "@/lib/arc/presets";
 import type { AnnouncementRecord } from "@/lib/arc/render/inputs";
 import type { ConnectionStatus } from "@/lib/feed/types";
@@ -21,13 +21,15 @@ import { TestFeedButton } from "./test-feed-button";
 
 interface AnnouncementControls {
   announcement: AnnouncementRecord | null;
-  send: (text: string, subtitle: string | undefined, durationMs: number) => void;
+  send: (text: string, subtitle: string | undefined, durationMs: number | null, urgent: boolean) => void;
+  extend: (durationMs: number | null) => void;
   cancel: () => void;
 }
 
 interface ClockControls {
   elapsed: number;
   running: boolean;
+  mode: "elapsed" | "countdown";
   start: () => void;
   pause: () => void;
   reset: () => void;
@@ -41,6 +43,16 @@ interface PresetControls {
   onDelete: (id: string) => void;
 }
 
+interface HistoryControls {
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const MOD_KEY = isMac ? "Cmd" : "Ctrl";
+
 export function TopToolbar({
   config,
   setBackground,
@@ -50,16 +62,18 @@ export function TopToolbar({
   presets,
   onPublish,
   isDirty,
+  history,
   announcementControls,
 }: {
   config: ArcConfig;
-  setBackground: (bg: string) => void;
+  setBackground: (bg: BackgroundConfig) => void;
   feedSettings: FeedSettings;
   feedStatus: ConnectionStatus;
   clock: ClockControls;
   presets: PresetControls;
   onPublish: () => void;
   isDirty: boolean;
+  history: HistoryControls;
   announcementControls: AnnouncementControls;
 }) {
   return (
@@ -77,15 +91,19 @@ export function TopToolbar({
       <ClockMini
         elapsed={clock.elapsed}
         running={clock.running}
+        mode={clock.mode}
         start={clock.start}
         pause={clock.pause}
         reset={clock.reset}
       />
+      <span className="mx-0.5 h-5 w-px bg-border" />
+      <UndoRedoButtons {...history} />
 
       <div className="ml-auto flex items-center gap-2">
         <AnnouncementButton
           announcement={announcementControls.announcement}
           send={announcementControls.send}
+          extend={announcementControls.extend}
           cancel={announcementControls.cancel}
         />
         <span className="mx-0.5 h-5 w-px bg-border" />
@@ -119,6 +137,33 @@ export function TopToolbar({
         </Button>
       </div>
     </header>
+  );
+}
+
+function UndoRedoButtons({ undo, redo, canUndo, canRedo }: HistoryControls) {
+  return (
+    <div className="flex items-center">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={undo}
+        disabled={!canUndo}
+        aria-label="Undo"
+        title={`Undo (${MOD_KEY}+Z)`}
+      >
+        <ArrowCounterClockwise weight="bold" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={redo}
+        disabled={!canRedo}
+        aria-label="Redo"
+        title={`Redo (${MOD_KEY}+Shift+Z)`}
+      >
+        <ArrowClockwise weight="bold" />
+      </Button>
+    </div>
   );
 }
 

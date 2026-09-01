@@ -34,14 +34,17 @@ import type { ConnectionStatus } from "@/lib/feed/types";
 import { cn } from "@/lib/utils";
 
 import { CONTENT_META } from "./content-meta";
+import { IconActionButton } from "./icon-action-button";
 
 interface ClockControls {
   elapsed: number;
   running: boolean;
+  mode: "elapsed" | "countdown";
   start: () => void;
   pause: () => void;
   reset: () => void;
   setElapsedMs: (ms: number) => void;
+  startCountdown: (ms: number) => void;
 }
 
 export function ZoneInspector({
@@ -77,7 +80,7 @@ export function ZoneInspector({
 
   const { content, rect } = comp;
   const meta = CONTENT_META[content.type];
-  const px = componentPixelSize(selectedSurface, rect);
+  const px = componentPixelSize(selectedSurface, rect, config.surfaceSizes);
   const aspect = px.w / px.h;
 
   const setContent = (c: ZoneContent) => setComponentContent(selectedSurface, selectedId, c);
@@ -94,7 +97,7 @@ export function ZoneInspector({
             value={comp.name ?? ""}
             placeholder={meta.label}
             onChange={(e) => renameComponent(selectedSurface, selectedId, e.target.value)}
-            className="w-full truncate bg-transparent text-sm font-semibold outline-none placeholder:text-foreground focus:placeholder:text-muted-foreground"
+            className="-mx-1 w-[calc(100%+0.5rem)] truncate rounded px-1 bg-transparent text-sm font-semibold outline-none transition-colors duration-150 placeholder:text-foreground focus:bg-muted focus:ring-3 focus:ring-ring/50 focus:placeholder:text-muted-foreground motion-reduce:transition-none"
             aria-label="Component name"
           />
           <p className="truncate text-xs text-muted-foreground">{surface.label}</p>
@@ -121,10 +124,12 @@ export function ZoneInspector({
             <ClockSection
               elapsed={clock.elapsed}
               running={clock.running}
+              mode={clock.mode}
               start={clock.start}
               pause={clock.pause}
               reset={clock.reset}
               setElapsedMs={clock.setElapsedMs}
+              startCountdown={clock.startCountdown}
             />
           </Group>
         )}
@@ -175,37 +180,37 @@ function PositionFields({
         <span className="mr-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Align
         </span>
-        <AlignBtn label="Left" onClick={() => set({ x: 0 })}>
-          <AlignLeft />
-        </AlignBtn>
-        <AlignBtn label="Center" onClick={() => set({ x: (1 - rect.w) / 2 })}>
-          <AlignCenterVertical />
-        </AlignBtn>
-        <AlignBtn label="Right" onClick={() => set({ x: 1 - rect.w })}>
-          <AlignRight />
-        </AlignBtn>
+        <IconActionButton label="Left" onClick={() => set({ x: 0 })}>
+          <AlignLeft className="size-4" />
+        </IconActionButton>
+        <IconActionButton label="Center" onClick={() => set({ x: (1 - rect.w) / 2 })}>
+          <AlignCenterVertical className="size-4" />
+        </IconActionButton>
+        <IconActionButton label="Right" onClick={() => set({ x: 1 - rect.w })}>
+          <AlignRight className="size-4" />
+        </IconActionButton>
         <span className="mx-1 h-4 w-px bg-border" />
-        <AlignBtn label="Top" onClick={() => set({ y: 0 })}>
-          <AlignTop />
-        </AlignBtn>
-        <AlignBtn label="Middle" onClick={() => set({ y: (1 - rect.h) / 2 })}>
-          <AlignCenterHorizontal />
-        </AlignBtn>
-        <AlignBtn label="Bottom" onClick={() => set({ y: 1 - rect.h })}>
-          <AlignBottom />
-        </AlignBtn>
+        <IconActionButton label="Top" onClick={() => set({ y: 0 })}>
+          <AlignTop className="size-4" />
+        </IconActionButton>
+        <IconActionButton label="Middle" onClick={() => set({ y: (1 - rect.h) / 2 })}>
+          <AlignCenterHorizontal className="size-4" />
+        </IconActionButton>
+        <IconActionButton label="Bottom" onClick={() => set({ y: 1 - rect.h })}>
+          <AlignBottom className="size-4" />
+        </IconActionButton>
       </div>
 
       <div className="flex items-center gap-1">
         <span className="mr-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Layer
         </span>
-        <AlignBtn label="Bring to front" onClick={() => reorder("front")}>
-          <ArrowLineUp />
-        </AlignBtn>
-        <AlignBtn label="Send to back" onClick={() => reorder("back")}>
-          <ArrowLineDown />
-        </AlignBtn>
+        <IconActionButton label="Bring to front" onClick={() => reorder("front")}>
+          <ArrowLineUp className="size-4" />
+        </IconActionButton>
+        <IconActionButton label="Send to back" onClick={() => reorder("back")}>
+          <ArrowLineDown className="size-4" />
+        </IconActionButton>
       </div>
     </div>
   );
@@ -221,7 +226,7 @@ function NumField({
   onChange: (v: number) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 rounded-md border border-input bg-background px-2.5">
+    <label className="flex items-center gap-2 rounded-md border border-input bg-background px-2.5 transition-colors duration-150 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 motion-reduce:transition-none">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <input
         type="number"
@@ -237,28 +242,11 @@ function NumField({
   );
 }
 
-function AlignBtn({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="grid size-7 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4"
-    >
-      {children}
-    </button>
-  );
-}
-
-/** The content-type palette — the heart of "customizing" a component. */
+/**
+ * The content-type palette — the heart of "customizing" a component. Icon-only,
+ * like a Figma/Canva tool strip: the name shows as a tooltip, not baked into
+ * every tile, so nine options read as one compact row instead of a wall of text.
+ */
 function TypePicker({
   value,
   onChange,
@@ -267,7 +255,7 @@ function TypePicker({
   onChange: (type: ContentType) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-1.5">
+    <div className="flex flex-wrap gap-1">
       {CONTENT_TYPES.map(({ type }) => {
         const meta = CONTENT_META[type];
         const active = type === value;
@@ -277,20 +265,18 @@ function TypePicker({
             type="button"
             onClick={() => onChange(type)}
             aria-pressed={active}
+            aria-label={meta.label}
+            title={meta.label}
             className={cn(
-              "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm outline-none transition-colors duration-150 motion-reduce:transition-none",
-              "focus-visible:ring-2 focus-visible:ring-ring",
+              "grid size-9 place-items-center rounded-lg border outline-none transition-colors duration-150 motion-reduce:transition-none",
+              "focus-visible:ring-3 focus-visible:ring-ring/50",
+              "active:not-aria-[haspopup]:translate-y-px",
               active
-                ? "border-signal/60 bg-signal/10 text-foreground"
-                : "border-border text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+                ? "border-signal/60 bg-signal/10 text-signal"
+                : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            <meta.Icon
-              size={16}
-              weight={active ? "fill" : "regular"}
-              className={cn("shrink-0", active ? "text-signal" : "text-muted-foreground")}
-            />
-            <span className="truncate">{meta.label}</span>
+            <meta.Icon size={17} weight={active ? "fill" : "regular"} />
           </button>
         );
       })}
@@ -300,7 +286,10 @@ function TypePicker({
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section aria-label={label} className="flex flex-col gap-1.5">
+    <section className="flex flex-col gap-1.5">
+      <h3 className="px-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </h3>
       {children}
     </section>
   );

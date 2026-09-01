@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { CLOCK, LEG, TOP_BAR } from "./layout";
+import { defaultSurfaceSizes } from "./surfaces";
 import {
+  arrangePlacements,
+  boundingBox,
   centerOffset,
   componentPixelSize,
   componentRectNative,
@@ -68,6 +71,51 @@ describe("componentPixelSize", () => {
     const size = componentPixelSize("leg-left", { x: 0, y: 0, w: 1, h: 0.5 });
     expect(size.w).toBe(LEG.w);
     expect(size.h).toBe(LEG.h / 2);
+  });
+});
+
+describe("arrangePlacements / boundingBox", () => {
+  it("matches SURFACE_PLACEMENTS at the default (native) sizes", () => {
+    expect(arrangePlacements(defaultSurfaceSizes())).toEqual(SURFACE_PLACEMENTS);
+  });
+
+  it("arranges each surface at its own edited resolution", () => {
+    const placements = arrangePlacements({
+      clock: { w: CLOCK.w * 2, h: CLOCK.h * 2 },
+      topbar: { w: TOP_BAR.w, h: TOP_BAR.h },
+      "leg-left": { w: LEG.w * 0.5, h: LEG.h * 0.5 },
+      "leg-right": { w: LEG.w * 1.5, h: LEG.h * 1.5 },
+    });
+    const clock = placements.find((p) => p.id === "clock")!;
+    const legLeft = placements.find((p) => p.id === "leg-left")!;
+    const legRight = placements.find((p) => p.id === "leg-right")!;
+    expect(clock.w).toBeCloseTo(CLOCK.w * 2, 5);
+    expect(clock.h).toBeCloseTo(CLOCK.h * 2, 5);
+    expect(legLeft.w).toBeCloseTo(LEG.w * 0.5, 5);
+    expect(legLeft.h).toBeCloseTo(LEG.h * 0.5, 5);
+    expect(legRight.w).toBeCloseTo(LEG.w * 1.5, 5);
+  });
+
+  it("still centers the clock and hangs the legs off the (resized) bar", () => {
+    const placements = arrangePlacements({
+      clock: { w: CLOCK.w * 1.5, h: CLOCK.h * 1.5 },
+      topbar: { w: TOP_BAR.w * 2, h: TOP_BAR.h * 2 },
+      "leg-left": { w: LEG.w, h: LEG.h },
+      "leg-right": { w: LEG.w, h: LEG.h },
+    });
+    const clock = placements.find((p) => p.id === "clock")!;
+    const topbar = placements.find((p) => p.id === "topbar")!;
+    const legLeft = placements.find((p) => p.id === "leg-left")!;
+    const legRight = placements.find((p) => p.id === "leg-right")!;
+    expect(clock.x).toBeCloseTo((topbar.w - clock.w) / 2, 5);
+    expect(legLeft.x).toBe(0);
+    expect(legLeft.y).toBe(clock.h + topbar.h);
+    expect(legRight.x).toBeCloseTo(topbar.w - legRight.w, 5);
+  });
+
+  it("bounding box spans the widest/tallest extent of the placements", () => {
+    const placements = arrangePlacements(defaultSurfaceSizes());
+    expect(boundingBox(placements)).toEqual({ w: STAGE_BOX.w, h: STAGE_BOX.h });
   });
 });
 

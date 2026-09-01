@@ -32,3 +32,11 @@ export function getSurface(id: SurfaceId): Surface | undefined {
 export function isSurfaceId(value: string): value is SurfaceId {
   return (SURFACE_IDS as string[]).includes(value);
 }
+
+/** Per-surface resolution (px), editable at runtime — see `ArcConfig.surfaceSizes`. */
+export type SurfaceSizes = Record<SurfaceId, { w: number; h: number }>;
+
+/** The out-of-the-box resolution for every surface, taken from their native size. */
+export function defaultSurfaceSizes(): SurfaceSizes {
+  return Object.fromEntries(SURFACES.map((s) => [s.id, { w: s.w, h: s.h }])) as SurfaceSizes;
+}

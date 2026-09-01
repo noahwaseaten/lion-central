@@ -61,6 +61,7 @@ export function useLogoLibrary() {
     async (files: FileList | File[], folder?: string | null): Promise<AssetInfo[]> => {
       const list = Array.from(files);
       const saved: AssetInfo[] = [];
+      let uploadError: string | null = null;
       for (const file of list) {
         const dataUrl = await readFileAsDataURL(file);
         const res = await fetch("/api/assets", {
@@ -75,8 +76,12 @@ export function useLogoLibrary() {
         if (res.ok) {
           const { asset } = (await res.json()) as { asset: AssetInfo };
           saved.push(asset);
+        } else {
+          const body = await res.json().catch(() => null) as { error?: string } | null;
+          uploadError = `Couldn't upload ${file.name}${body?.error ? `: ${body.error}` : ""}`;
         }
       }
+      setError(uploadError);
       if (saved.length) {
         setAssets((prev) => [...saved, ...prev]);
         if (folder) {

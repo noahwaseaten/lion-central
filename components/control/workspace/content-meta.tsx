@@ -1,6 +1,7 @@
 import {
   Broadcast,
   CircleDashed,
+  CloudSun,
   type Icon,
   Image as ImageIcon,
   Images,
@@ -27,6 +28,7 @@ export const CONTENT_META: Record<ContentType, { label: string; Icon: Icon; dot:
   image: { label: "Image", Icon: ImageIcon, dot: "bg-bike" },
   video: { label: "Video", Icon: VideoCamera, dot: "bg-run" },
   qr: { label: "QR Code", Icon: QrCode, dot: "bg-foreground" },
+  weather: { label: "Weather", Icon: CloudSun, dot: "bg-foreground" },
   color: { label: "Solid color", Icon: PaintBucket, dot: "bg-foreground" },
   off: { label: "Off", Icon: CircleDashed, dot: "bg-muted-foreground" },
 };

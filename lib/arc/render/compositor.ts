@@ -1,5 +1,6 @@
 import type { Rect } from "./zones";
-import { getSurface, type SurfaceId } from "../surfaces";
+import type { SurfaceId } from "../surfaces";
+import { paintBackground } from "./background";
 import type { AnnouncementRecord, SurfaceInputs } from "./inputs";
 import { drawComponent, fitFont, hexA, SPLIT_COLOR } from "./zones";
 
@@ -20,12 +21,10 @@ export function drawSurface(
   inputs: SurfaceInputs,
   tMs: number,
 ): void {
-  const surface = getSurface(surfaceId);
+  const surface = inputs.config.surfaceSizes[surfaceId];
   if (!surface) return;
 
-  // Arc background (the physical arc is white).
-  ctx.fillStyle = inputs.config.background || "#ffffff";
-  ctx.fillRect(0, 0, surface.w, surface.h);
+  paintBackground(ctx, inputs.config.background, surfaceId, surface.w, surface.h, inputs.config.surfaceSizes);
 
   const components = inputs.config.surfaces[surfaceId] ?? [];
   for (const comp of components) {
@@ -36,7 +35,7 @@ export function drawSurface(
       h: comp.rect.h * surface.h,
     };
     if (rect.w < 1 || rect.h < 1) continue;
-    drawComponent(ctx, rect, comp.content, inputs, tMs, comp.id);
+    drawComponent(ctx, rect, comp.content, inputs, tMs, comp.id, surfaceId);
   }
 
   // Background pulse: faint split-coloured wash painted AFTER components so it
@@ -52,45 +51,101 @@ export function drawSurface(
 
   // Announcement overlay — topbar only, drawn last so it covers all components.
   if (inputs.announcement && surfaceId === "topbar") {
-    paintAnnouncement(ctx, surface.w, surface.h, inputs.announcement);
+    paintAnnouncement(ctx, surface.w, surface.h, inputs.announcement, tMs);
   }
 }
 
 const ANN_FONT = "Inter, system-ui, sans-serif";
+const CAUTION_YELLOW = "#facc15";
+const CAUTION_BLACK = "#0a0a0a";
+/** Diagonal-stripe repeat length (px) and crawl speed (px/ms) for the caution border. */
+const STRIPE_PERIOD = 28;
+const STRIPE_SPEED = 0.028;
 
 function paintAnnouncement(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
   rec: AnnouncementRecord,
+  tMs: number,
 ): void {
   const now = Date.now();
   const fadeIn  = Math.min(1, (now - rec.startedAt) / 200);
-  const fadeOut = Math.min(1, (rec.endsAt - now) / 400);
+  const fadeOut = rec.permanent ? 1 : Math.min(1, (rec.endsAt - now) / 400);
   const alpha   = Math.min(fadeIn, fadeOut);
   if (alpha <= 0.01) return;
 
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  ctx.fillStyle = "#0f172a";
+  // Solid white panel (not the old solid-black one) so the message reads clearly
+  // over whatever the bar was showing; the border draws on top of it.
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, w, h);
+  const band = rec.urgent ? paintCautionBorder(ctx, w, h, tMs) : plainInset(w, h);
 
   const hasSub = !!rec.subtitle?.trim();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  const titlePx = fitFont(ctx, rec.text, w * 0.88, hasSub ? h * 0.44 : h * 0.56, "800");
+  const maxW = w - band * 2.4;
+  const titlePx = fitFont(ctx, rec.text, maxW, hasSub ? h * 0.38 : h * 0.48, "800");
   ctx.font = `800 ${titlePx}px ${ANN_FONT}`;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = CAUTION_BLACK;
   ctx.fillText(rec.text, w / 2, hasSub ? h * 0.42 : h / 2);
 
   if (hasSub) {
-    const subPx = fitFont(ctx, rec.subtitle!, w * 0.82, h * 0.22, "500");
-    ctx.font = `500 ${subPx}px ${ANN_FONT}`;
-    ctx.fillStyle = hexA("#ffffff", 0.6);
+    const subPx = fitFont(ctx, rec.subtitle!, maxW, h * 0.2, "600");
+    ctx.font = `600 ${subPx}px ${ANN_FONT}`;
+    ctx.fillStyle = hexA(CAUTION_BLACK, 0.65);
     ctx.fillText(rec.subtitle!, w / 2, h * 0.72);
   }
 
   ctx.restore();
+}
+
+/**
+ * A "keep out" caution-tape frame inset from the surface edges: diagonal
+ * black/yellow stripes crawling slowly around the inside border. Returns the
+ * band thickness so the caller can keep text clear of it.
+ */
+function paintCautionBorder(ctx: CanvasRenderingContext2D, w: number, h: number, tMs: number): number {
+  const band = Math.max(8, Math.min(w, h) * 0.09);
+  const inset = Math.max(3, band * 0.22);
+  const phase = ((tMs * STRIPE_SPEED) % STRIPE_PERIOD + STRIPE_PERIOD) % STRIPE_PERIOD;
+
+  ctx.save();
+  // Clip to the frame band only: outer rect minus inner rect (evenodd).
+  const frame = new Path2D();
+  frame.rect(inset, inset, w - inset * 2, h - inset * 2);
+  frame.rect(inset + band, inset + band, w - inset * 2 - band * 2, h - inset * 2 - band * 2);
+  ctx.clip(frame, "evenodd");
+
+  ctx.fillStyle = CAUTION_BLACK;
+  ctx.fillRect(0, 0, w, h);
+
+  // Diagonal stripes sweep across the whole surface; the clip masks them to
+  // the frame, so the same sweep reads as a continuous tape around all 4 sides.
+  // Each parallelogram shifts by `h` from top (y=0) to bottom (y=h), so the sweep
+  // has to start a full `h` further left than the frame — otherwise the strips
+  // needed to reach the bottom-left corner never get drawn (band goes missing there).
+  ctx.fillStyle = CAUTION_YELLOW;
+  const stripeW = STRIPE_PERIOD / 2;
+  for (let o = -h - STRIPE_PERIOD - phase; o < w + STRIPE_PERIOD; o += STRIPE_PERIOD) {
+    ctx.beginPath();
+    ctx.moveTo(o, 0);
+    ctx.lineTo(o + stripeW, 0);
+    ctx.lineTo(o + stripeW + h, h);
+    ctx.lineTo(o + h, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+  return band + inset;
+}
+
+/** No border for non-urgent announcements — just the text-clearance inset, no stroke. */
+function plainInset(w: number, h: number): number {
+  return Math.max(4, Math.min(w, h) * 0.06);
 }

@@ -3,8 +3,10 @@ import QRCode from "qrcode";
 import { formatClock } from "@/lib/feed/format";
 import type { Split } from "@/lib/feed/types";
 
-import type { ZoneContent } from "../content";
+import type { BackgroundConfig, ImageShadow, WeatherCondition, ZoneContent } from "../content";
+import type { SurfaceId, SurfaceSizes } from "../surfaces";
 import { getImage, getVideo } from "./assets";
+import { paintBackgroundSlice } from "./background";
 import { tickerRows, type TickerRow } from "./feed-anim";
 import type { SurfaceInputs } from "./inputs";
 import { sponsorColumns, sponsorGrid } from "./sponsor-layout";
@@ -51,6 +53,7 @@ export function drawComponent(
   inputs: SurfaceInputs,
   tMs: number,
   componentId: string,
+  surfaceId: SurfaceId,
 ): void {
   ctx.save();
   ctx.beginPath();
@@ -61,7 +64,7 @@ export function drawComponent(
 
   switch (content.type) {
     case "feed":
-      paintFeed(ctx, w, h, inputs, tMs, componentId);
+      paintFeed(ctx, w, h, inputs, tMs, componentId, surfaceId, rect.x, rect.y);
       break;
     case "clock":
       paintClock(ctx, w, h, inputs, content);
@@ -80,6 +83,9 @@ export function drawComponent(
       break;
     case "qr":
       paintQr(ctx, w, h, content);
+      break;
+    case "weather":
+      paintWeather(ctx, w, h, content);
       break;
     case "color":
       ctx.fillStyle = content.color;
@@ -106,6 +112,9 @@ function paintFeed(
   inputs: SurfaceInputs,
   tMs: number,
   componentId: string,
+  surfaceId: SurfaceId,
+  originX: number,
+  originY: number,
 ): void {
   const { entries, status } = inputs.feed;
   const rowCount = feedRowCount(h);
@@ -123,7 +132,7 @@ function paintFeed(
   for (const row of rows) paintFeedRow(ctx, w, rowH, row);
 
   // Soft fades at the top/bottom edges so rows dissolve as they glide past.
-  paintEdgeFade(ctx, w, h, inputs.config.background || "#ffffff");
+  paintEdgeFade(ctx, w, h, inputs.config.background, surfaceId, inputs.config.surfaceSizes, originX, originY);
 }
 
 /** One ticker row: accent bar, bib, name, split label, time. */
@@ -195,25 +204,57 @@ function paintFeedRow(
   ctx.restore();
 }
 
-/** Top & bottom gradient masks (in the surface background color). */
+/** Steps for the video-mode edge fade — a strip per step, each redrawing a sliver of the real background at a ramping alpha. */
+const EDGE_FADE_STEPS = 8;
+
+/** Top & bottom fades so rows dissolve into the real surface background — an exact color gradient for a solid background, or a strip-sampled fade into the actual video for an animated one. */
 function paintEdgeFade(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
-  bg: string,
+  background: BackgroundConfig,
+  surfaceId: SurfaceId,
+  sizes: SurfaceSizes,
+  originX: number,
+  originY: number,
 ): void {
   const fade = Math.min(16, h * 0.12);
-  const top = ctx.createLinearGradient(0, 0, 0, fade);
-  top.addColorStop(0, bg);
-  top.addColorStop(1, hexA(bg, 0));
-  ctx.fillStyle = top;
-  ctx.fillRect(0, 0, w, fade);
 
-  const bottom = ctx.createLinearGradient(0, h - fade, 0, h);
-  bottom.addColorStop(0, hexA(bg, 0));
-  bottom.addColorStop(1, bg);
-  ctx.fillStyle = bottom;
-  ctx.fillRect(0, h - fade, w, fade);
+  if (background.mode !== "video") {
+    const bg = background.color;
+    const top = ctx.createLinearGradient(0, 0, 0, fade);
+    top.addColorStop(0, bg);
+    top.addColorStop(1, hexA(bg, 0));
+    ctx.fillStyle = top;
+    ctx.fillRect(0, 0, w, fade);
+
+    const bottom = ctx.createLinearGradient(0, h - fade, 0, h);
+    bottom.addColorStop(0, hexA(bg, 0));
+    bottom.addColorStop(1, bg);
+    ctx.fillStyle = bottom;
+    ctx.fillRect(0, h - fade, w, fade);
+    return;
+  }
+
+  // A flat-color fade would show as a mismatched patch over a moving video, so
+  // instead redraw thin strips of the real background with a ramping alpha —
+  // each strip samples the correct video crop for its exact position. Alpha
+  // runs opaque-at-the-outer-edge → transparent-toward-the-content on both
+  // ends, so the direction flips between the top and bottom band.
+  const step = fade / EDGE_FADE_STEPS;
+  const stepH = step + 0.5; // slight overlap so steps don't leave seams
+  ctx.save();
+  for (let i = 0; i < EDGE_FADE_STEPS; i++) {
+    const t = (i + 0.5) / EDGE_FADE_STEPS; // 0 near the outer edge, 1 near the content
+    const topY = i * step;
+    ctx.globalAlpha = 1 - t;
+    paintBackgroundSlice(ctx, background, surfaceId, sizes, originX, originY + topY, 0, topY, w, stepH);
+
+    const bottomY = h - fade + i * step;
+    ctx.globalAlpha = t;
+    paintBackgroundSlice(ctx, background, surfaceId, sizes, originX, originY + bottomY, 0, bottomY, w, stepH);
+  }
+  ctx.restore();
 }
 
 function paintFeedSkeleton(ctx: CanvasRenderingContext2D, w: number, h: number, rowCount: number): void {
@@ -270,6 +311,36 @@ function paintText(
     ctx.fillStyle = "#52525b";
     ctx.fillText(content.subtitle!, w / 2, h * 0.74);
   }
+}
+
+/** Emoji glyphs — simplest way to render an "icon" onto a plain 2D canvas, no asset/font loading needed. */
+const WEATHER_ICON: Record<WeatherCondition, string> = {
+  sunny: "☀️",
+  cloudy: "☁️",
+  rain: "🌧️",
+  wind: "💨",
+};
+
+function paintWeather(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  content: Extract<ZoneContent, { type: "weather" }>,
+): void {
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const tempText = `${WEATHER_ICON[content.condition]} ${Math.round(content.tempC)}°C`;
+  const tempPx = fitFont(ctx, tempText, w * 0.9, h * 0.52, "800");
+  ctx.font = `800 ${tempPx}px ${FONT}`;
+  ctx.fillStyle = "#0a0a0a";
+  ctx.fillText(tempText, w / 2, h * 0.38);
+
+  const windText = `💨 ${Math.round(content.windKph)} km/h${content.windDir ? ` ${content.windDir}` : ""}`;
+  const windPx = fitFont(ctx, windText, w * 0.86, h * 0.24, "600");
+  ctx.font = `600 ${windPx}px ${FONT}`;
+  ctx.fillStyle = "#6b7280";
+  ctx.fillText(windText, w / 2, h * 0.74);
 }
 
 const LABEL_H_FRAC = 0.22;
@@ -419,7 +490,13 @@ export function drawTransformed(
   mh: number,
   w: number,
   h: number,
-  t: { fit: "contain" | "cover"; scale: number; offset: { x: number; y: number }; padding: number },
+  t: {
+    fit: "contain" | "cover";
+    scale: number;
+    offset: { x: number; y: number };
+    padding: number;
+    shadow?: ImageShadow;
+  },
 ): void {
   if (!mw || !mh) return;
   const pad = Math.min(w, h) * t.padding;
@@ -435,6 +512,13 @@ export function drawTransformed(
   ctx.beginPath();
   ctx.rect(pad, pad, iw, ih);
   ctx.clip();
+  // Canvas shadows follow the drawn image's own alpha silhouette (not its
+  // bounding box), so a transparent-background logo gets a shadow that hugs
+  // its actual mark — visible as long as `padding` leaves it room to blur into.
+  if (t.shadow?.enabled) {
+    ctx.shadowColor = hexA(t.shadow.color, t.shadow.opacity);
+    ctx.shadowBlur = t.shadow.blur;
+  }
   ctx.drawImage(media, dx, dy, dw, dh);
   ctx.restore();
 }

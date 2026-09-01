@@ -28,7 +28,7 @@ export function useArcInputs(): SurfaceInputs {
     useFallbackAlways: settings.useFallbackAlways,
     online,
   });
-  const { elapsed, running } = useRaceClock();
+  const { elapsed, running, direction } = useRaceClock();
   const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
   const { announcement } = useAnnouncement();
 
@@ -36,9 +36,9 @@ export function useArcInputs(): SurfaceInputs {
     () => ({
       config,
       feed: { entries, status, lastArrivalMs, lastArrivalSplit },
-      clock: { ms: elapsed, running },
+      clock: { ms: elapsed, running, direction },
       announcement,
     }),
-    [config, entries, status, lastArrivalMs, lastArrivalSplit, elapsed, running, announcement],
+    [config, entries, status, lastArrivalMs, lastArrivalSplit, elapsed, running, direction, announcement],
   );
 }

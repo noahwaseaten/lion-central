@@ -44,7 +44,12 @@ export function SurfaceClockOverlay({
               height: h,
             }}
           >
-            <NumberFlowClock ms={inputs.clock.ms} running={inputs.clock.running} fontPx={fontPx} />
+            <NumberFlowClock
+              ms={inputs.clock.ms}
+              running={inputs.clock.running}
+              direction={inputs.clock.direction}
+              fontPx={fontPx}
+            />
           </div>
         );
       })}

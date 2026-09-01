@@ -22,7 +22,12 @@ export function OutputsMenu() {
         }
       />
       <MenuContent>
-        <MenuLabel>Open output window</MenuLabel>
+        <MenuItem onClick={() => open("/output/all")}>
+          <Monitor />
+          All surfaces (combined)
+        </MenuItem>
+        <MenuSeparator />
+        <MenuLabel>Open a single surface</MenuLabel>
         {SURFACES.map((s) => (
           <MenuItem key={s.id} onClick={() => open(`/output/${s.id}`)}>
             <ArrowSquareOut />
@@ -31,8 +36,8 @@ export function OutputsMenu() {
         ))}
         <MenuSeparator />
         <MenuItem onClick={() => SURFACES.forEach((s) => open(`/output/${s.id}`))}>
-          <Monitor />
-          Open all
+          <ArrowSquareOut />
+          Open all separately
         </MenuItem>
       </MenuContent>
     </Menu>

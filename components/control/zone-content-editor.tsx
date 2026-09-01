@@ -5,7 +5,15 @@ import { useState } from "react";
 import { ImageCropEditor } from "@/components/control/image-crop-editor";
 import { MediaLibraryTrigger } from "@/components/control/media-library";
 import { Switch } from "@/components/ui/switch";
-import { defaultTransform, type Fit, type ImageTransform, type SponsorItem, type ZoneContent } from "@/lib/arc/content";
+import {
+  defaultTransform,
+  type Fit,
+  type ImageTransform,
+  type SponsorItem,
+  WEATHER_CONDITIONS,
+  type WeatherCondition,
+  type ZoneContent,
+} from "@/lib/arc/content";
 
 const inputCls =
   "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -61,6 +69,8 @@ export function ZoneFields({
       return <VideoFields content={content} onChange={onChange} />;
     case "qr":
       return <QrFields content={content} onChange={onChange} />;
+    case "weather":
+      return <WeatherFields content={content} onChange={onChange} />;
     case "color":
       return (
         <label className="flex items-center justify-between gap-3 text-sm">
@@ -131,6 +141,68 @@ function QrFields({
           placeholder="Scan for results"
           className={inputCls}
         />
+      </div>
+    </div>
+  );
+}
+
+function WeatherFields({
+  content,
+  onChange,
+}: {
+  content: Extract<ZoneContent, { type: "weather" }>;
+  onChange: (next: ZoneContent) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs text-muted-foreground">
+        Operator-set — type in the current conditions, no sensor or forecast hookup.
+      </p>
+      <div className="flex gap-2">
+        <Field label="Temperature (°C)">
+          <input
+            type="number"
+            step={1}
+            value={content.tempC}
+            onChange={(e) => onChange({ ...content, tempC: Number(e.target.value) || 0 })}
+            className={inputCls}
+          />
+        </Field>
+        <Field label="Wind (km/h)">
+          <input
+            type="number"
+            min={0}
+            step={1}
+            value={content.windKph}
+            onChange={(e) => onChange({ ...content, windKph: Math.max(0, Number(e.target.value) || 0) })}
+            className={inputCls}
+          />
+        </Field>
+      </div>
+      <div className="flex gap-2">
+        <Field label="Wind direction">
+          <input
+            type="text"
+            value={content.windDir}
+            onChange={(e) => onChange({ ...content, windDir: e.target.value.slice(0, 4).toUpperCase() })}
+            placeholder="NW"
+            maxLength={4}
+            className={inputCls}
+          />
+        </Field>
+        <Field label="Condition">
+          <select
+            value={content.condition}
+            onChange={(e) => onChange({ ...content, condition: e.target.value as WeatherCondition })}
+            className={inputCls}
+          >
+            {WEATHER_CONDITIONS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
     </div>
   );

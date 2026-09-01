@@ -5,46 +5,61 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import type { AnnouncementRecord } from "@/lib/arc/render/inputs";
+import { formatSeconds } from "@/lib/feed/format";
+import { parseTime } from "@/lib/feed/parse";
 import { cn } from "@/lib/utils";
 
 const inputCls =
-  "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-40";
 const labelCls = "text-xs font-medium text-muted-foreground";
 
-const DURATIONS = [
+const PRESETS = [
   { label: "15s", ms: 15_000 },
   { label: "30s", ms: 30_000 },
   { label: "1 min", ms: 60_000 },
   { label: "2 min", ms: 120_000 },
+  { label: "5 min", ms: 300_000 },
+];
+
+const EXTEND_PRESETS = [
+  { label: "+30s", ms: 30_000 },
+  { label: "+1 min", ms: 60_000 },
+  { label: "+5 min", ms: 300_000 },
 ];
 
 export function AnnouncementButton({
   announcement,
   send,
+  extend,
   cancel,
 }: {
   announcement: AnnouncementRecord | null;
-  send: (text: string, subtitle: string | undefined, durationMs: number) => void;
+  send: (text: string, subtitle: string | undefined, durationMs: number | null, urgent: boolean) => void;
+  extend: (durationMs: number | null) => void;
   cancel: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [durationMs, setDurationMs] = useState(30_000);
+  const [durationDraft, setDurationDraft] = useState("0:30");
+  const [durationInvalid, setDurationInvalid] = useState(false);
+  const [permanent, setPermanent] = useState(false);
+  const [urgent, setUrgent] = useState(true);
   const [remaining, setRemaining] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Countdown timer when an announcement is active
+  // Countdown timer when a (non-permanent) announcement is active.
   useEffect(() => {
-    if (!announcement) { setRemaining(null); return; }
+    if (!announcement || announcement.permanent) { setRemaining(null); return; }
     const tick = () => setRemaining(Math.max(0, announcement.endsAt - Date.now()));
     tick();
     const id = setInterval(tick, 500);
     return () => clearInterval(id);
   }, [announcement]);
 
-  // Auto-focus the text input when the popover opens in idle state
+  // Auto-focus the text input when the popover opens in idle state.
   useEffect(() => {
     if (open && !announcement) {
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -53,10 +68,22 @@ export function AnnouncementButton({
 
   function handleSend() {
     if (!text.trim()) return;
-    send(text.trim(), subtitle.trim() || undefined, durationMs);
+    let ms: number | null = null;
+    if (!permanent) {
+      const parsed = parseTime(durationDraft);
+      if (parsed === null || parsed <= 0) {
+        setDurationInvalid(true);
+        return;
+      }
+      ms = parsed * 1000;
+    }
+    send(text.trim(), subtitle.trim() || undefined, ms, urgent);
     setText("");
     setSubtitle("");
-    setDurationMs(30_000);
+    setDurationDraft("0:30");
+    setDurationInvalid(false);
+    setPermanent(false);
+    setUrgent(true);
     setOpen(false);
   }
 
@@ -86,16 +113,23 @@ export function AnnouncementButton({
             announcement={announcement}
             remaining={remaining}
             onCancel={() => { cancel(); setOpen(false); }}
+            onExtend={extend}
           />
         ) : (
           <IdleState
             text={text}
             subtitle={subtitle}
-            durationMs={durationMs}
+            durationDraft={durationDraft}
+            durationInvalid={durationInvalid}
+            permanent={permanent}
+            urgent={urgent}
             inputRef={inputRef}
             onText={setText}
             onSubtitle={setSubtitle}
-            onDuration={setDurationMs}
+            onDurationDraft={(v) => { setDurationDraft(v); setDurationInvalid(false); }}
+            onPreset={(ms) => { setDurationDraft(formatSeconds(ms / 1000)); setDurationInvalid(false); setPermanent(false); }}
+            onPermanent={setPermanent}
+            onUrgent={setUrgent}
             onSend={handleSend}
           />
         )}
@@ -107,28 +141,37 @@ export function AnnouncementButton({
 function IdleState({
   text,
   subtitle,
-  durationMs,
+  durationDraft,
+  durationInvalid,
+  permanent,
+  urgent,
   inputRef,
   onText,
   onSubtitle,
-  onDuration,
+  onDurationDraft,
+  onPreset,
+  onPermanent,
+  onUrgent,
   onSend,
 }: {
   text: string;
   subtitle: string;
-  durationMs: number;
+  durationDraft: string;
+  durationInvalid: boolean;
+  permanent: boolean;
+  urgent: boolean;
   inputRef: React.RefObject<HTMLInputElement | null>;
   onText: (v: string) => void;
   onSubtitle: (v: string) => void;
-  onDuration: (ms: number) => void;
+  onDurationDraft: (v: string) => void;
+  onPreset: (ms: number) => void;
+  onPermanent: (v: boolean) => void;
+  onUrgent: (v: boolean) => void;
   onSend: () => void;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <h3 className="text-sm font-semibold">Send announcement</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">Overrides the top bar for the selected duration. Press Ctrl+Z to cancel early.</p>
-      </div>
+      <h3 className="text-sm font-semibold">Send announcement</h3>
 
       <div className="flex flex-col gap-1.5">
         <label className={labelCls}>Message</label>
@@ -156,24 +199,49 @@ function IdleState({
 
       <div className="flex flex-col gap-1.5">
         <label className={labelCls}>Duration</label>
-        <div className="flex gap-1.5">
-          {DURATIONS.map((d) => (
+        <div className="flex flex-wrap gap-1.5">
+          {PRESETS.map((d) => (
             <button
               key={d.ms}
               type="button"
-              onClick={() => onDuration(d.ms)}
+              onClick={() => onPreset(d.ms)}
+              disabled={permanent}
               className={cn(
-                "flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors",
-                durationMs === d.ms
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-input bg-background text-muted-foreground hover:text-foreground",
+                "rounded-md border px-2 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-40",
+                "border-input bg-background text-muted-foreground hover:text-foreground",
               )}
             >
               {d.label}
             </button>
           ))}
         </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={durationDraft}
+            onChange={(e) => onDurationDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onSend()}
+            disabled={permanent}
+            aria-invalid={durationInvalid}
+            placeholder="H:MM:SS"
+            className={cn(inputCls, "tabular-nums aria-invalid:border-destructive")}
+          />
+        </div>
       </div>
+
+      <Switch
+        id="announcement-permanent"
+        checked={permanent}
+        onCheckedChange={onPermanent}
+        label="No time limit (until removed)"
+      />
+      <Switch
+        id="announcement-urgent"
+        checked={urgent}
+        onCheckedChange={onUrgent}
+        label="Caution border"
+      />
 
       <Button onClick={onSend} disabled={!text.trim()} size="sm" className="w-full">
         Send
@@ -186,13 +254,16 @@ function ActiveState({
   announcement,
   remaining,
   onCancel,
+  onExtend,
 }: {
   announcement: AnnouncementRecord;
   remaining: number | null;
   onCancel: () => void;
+  onExtend: (durationMs: number | null) => void;
 }) {
-  const remainingStr =
-    remaining === null
+  const remainingStr = announcement.permanent
+    ? "No time limit"
+    : remaining === null
       ? ""
       : remaining >= 60_000
         ? `${Math.ceil(remaining / 60_000)}m remaining`
@@ -212,6 +283,31 @@ function ActiveState({
         {announcement.subtitle && (
           <p className="mt-0.5 text-xs text-muted-foreground">{announcement.subtitle}</p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className={labelCls}>Extend</label>
+        <div className="flex flex-wrap gap-1.5">
+          {EXTEND_PRESETS.map((d) => (
+            <button
+              key={d.ms}
+              type="button"
+              onClick={() => onExtend(d.ms)}
+              className="rounded-md border border-input bg-background px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {d.label}
+            </button>
+          ))}
+          {!announcement.permanent && (
+            <button
+              type="button"
+              onClick={() => onExtend(null)}
+              className="rounded-md border border-input bg-background px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              No limit
+            </button>
+          )}
+        </div>
       </div>
 
       <Button variant="destructive" size="sm" onClick={onCancel} className="w-full">
