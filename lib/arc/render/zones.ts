@@ -6,6 +6,7 @@ import type { Split } from "@/lib/feed/types";
 import type { BackgroundConfig, ImageShadow, WeatherCondition, ZoneContent } from "../content";
 import type { SurfaceId, SurfaceSizes } from "../surfaces";
 import { getImage, getVideo } from "./assets";
+import { rasterSourceFor } from "./raster";
 import { paintBackgroundSlice } from "./background";
 import { tickerRows, type TickerRow } from "./feed-anim";
 import type { SurfaceInputs } from "./inputs";
@@ -519,8 +520,22 @@ export function drawTransformed(
     ctx.shadowColor = hexA(t.shadow.color, t.shadow.opacity);
     ctx.shadowBlur = t.shadow.blur;
   }
-  ctx.drawImage(media, dx, dy, dw, dh);
+  const source = rasterSourceFor(media, ...deviceSize(ctx, dw, dh));
+  if (source) ctx.drawImage(source, dx, dy, dw, dh);
   ctx.restore();
+}
+
+/**
+ * The size `w`×`h` logical units occupy in device pixels under the context's
+ * current transform — what a cached raster has to match to stay sharp.
+ */
+function deviceSize(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+): [number, number] {
+  const m = ctx.getTransform();
+  return [w * (Math.hypot(m.a, m.b) || 1), h * (Math.hypot(m.c, m.d) || 1)];
 }
 
 function drawMedia(
@@ -544,7 +559,8 @@ function drawMedia(
   ctx.beginPath();
   ctx.rect(x, y, w, h);
   ctx.clip();
-  ctx.drawImage(media, dx, dy, dw, dh);
+  const source = rasterSourceFor(media, ...deviceSize(ctx, dw, dh));
+  if (source) ctx.drawImage(source, dx, dy, dw, dh);
   ctx.restore();
 }
 

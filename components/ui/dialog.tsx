@@ -16,7 +16,7 @@ function DialogBackdrop({ className, hidden }: { className?: string; hidden?: bo
         hidden
           ? "pointer-events-none bg-transparent"
           : "bg-black/60 backdrop-blur-sm",
-        "transition-opacity data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+        "transition-opacity duration-200 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
         "motion-reduce:transition-none",
         className,
       )}
@@ -24,14 +24,24 @@ function DialogBackdrop({ className, hidden }: { className?: string; hidden?: bo
   );
 }
 
+/**
+ * The popup splits into two elements on purpose: an outer box that owns the
+ * geometry (and never transitions it), and an inner card that owns every
+ * animated property. Anything a caller wants to move or fade goes on the card
+ * via `cardClassName`, so it can't collide with the open/close fade the outer
+ * box runs off Base UI's `data-starting-style` / `data-ending-style`.
+ */
 function DialogPopup({
   children,
   className,
+  cardClassName,
   backdropHidden,
   positionStyle,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Styles on the card — animate only `transform` and `opacity` here. */
+  cardClassName?: string;
   backdropHidden?: boolean;
   positionStyle?: React.CSSProperties;
 }) {
@@ -40,17 +50,22 @@ function DialogPopup({
       <DialogBackdrop hidden={backdropHidden} />
       <DialogPrimitive.Popup
         className={cn(
-          "fixed z-50 rounded-xl border border-border bg-card shadow-2xl shadow-black/60 outline-none",
-          "transition-[left,top,width,height,transform,opacity] duration-[420ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "fixed z-50 outline-none",
           !positionStyle && "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "data-[starting-style]:opacity-0",
-          "data-[ending-style]:opacity-0",
+          "transition-opacity duration-200 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
           "motion-reduce:transition-none",
           className,
         )}
         style={positionStyle}
       >
-        {children}
+        <div
+          className={cn(
+            "flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-black/60",
+            cardClassName,
+          )}
+        >
+          {children}
+        </div>
       </DialogPrimitive.Popup>
     </DialogPrimitive.Portal>
   );

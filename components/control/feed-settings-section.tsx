@@ -3,7 +3,9 @@
 import { ArrowClockwise } from "@phosphor-icons/react";
 import { useCallback, useEffect, useState } from "react";
 
+import { FeedStatusChip } from "@/components/control/workspace/feed-status-chip";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import type { FeedSettings } from "@/hooks/use-feed-settings";
 import { formatSeconds } from "@/lib/feed/format";
 import { parseTime } from "@/lib/feed/parse";
@@ -14,20 +16,17 @@ interface FeedFile {
   mtimeMs: number;
 }
 
-const STATUS_COPY: Record<ConnectionStatus, string> = {
-  connecting: "Connecting…",
-  live: "Live",
-  reconnecting: "Reconnecting…",
-  polling: "Polling",
-  empty: "Connected — no athletes yet",
-  error: "No feed",
-  offline: "Offline",
-};
-
 const inputCls =
   "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-/** Operator controls for the live-feed data source: file, thresholds, polling. */
+/**
+ * Operator controls for the live-feed data source.
+ *
+ * Laid out the way the rest of the inspector is — every label above its control,
+ * one `Switch` rather than a stray raw checkbox — and split by how often an
+ * operator touches it: the file and the split thresholds change race to race,
+ * the transport settings almost never.
+ */
 export function FeedSettingsSection({
   settings,
   update,
@@ -63,15 +62,15 @@ export function FeedSettingsSection({
   }, [loadFiles]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">Status</span>
-        <span className="text-sm font-medium">{STATUS_COPY[status]}</span>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">Status</span>
+        <FeedStatusChip status={status} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">Feed file</span>
+      <FieldSet
+        label="Feed file"
+        action={
           <Button
             type="button"
             variant="ghost"
@@ -82,11 +81,13 @@ export function FeedSettingsSection({
             <ArrowClockwise weight="bold" />
             Refresh
           </Button>
-        </div>
+        }
+      >
         <select
           className={inputCls}
           value={settings.file ?? ""}
           onChange={(e) => update({ file: e.target.value || null })}
+          aria-label="Feed file"
         >
           <option value="">— Select a file —</option>
           {files.map((f) => (
@@ -95,54 +96,74 @@ export function FeedSettingsSection({
             </option>
           ))}
         </select>
-        {filesError && <p className="text-sm text-destructive">{filesError}</p>}
+        {filesError && <p className="text-xs text-destructive">{filesError}</p>}
         {!filesError && !loadingFiles && files.length === 0 && (
           <p className="text-xs text-muted-foreground">No .txt files found. Check FEED_DIR.</p>
         )}
-      </div>
+      </FieldSet>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-muted-foreground">
-          Split thresholds (cumulative)
-        </span>
-        <ThresholdField
-          label="Swim ends"
-          seconds={settings.thresholds.swimEndSec}
-          onCommit={(v) => update({ thresholds: { ...settings.thresholds, swimEndSec: v } })}
-        />
-        <ThresholdField
-          label="Bike ends"
-          seconds={settings.thresholds.bikeEndSec}
-          onCommit={(v) => update({ thresholds: { ...settings.thresholds, bikeEndSec: v } })}
-        />
-        <ThresholdField
-          label="Grace buffer"
-          seconds={settings.thresholds.graceSec}
-          onCommit={(v) => update({ thresholds: { ...settings.thresholds, graceSec: v } })}
-        />
-        <p className="text-xs text-muted-foreground">Format H:MM:SS or MM:SS. Applied live.</p>
-      </div>
+      <FieldSet label="Split thresholds">
+        <div className="grid grid-cols-2 gap-2">
+          <ThresholdField
+            label="Swim ends"
+            seconds={settings.thresholds.swimEndSec}
+            onCommit={(v) => update({ thresholds: { ...settings.thresholds, swimEndSec: v } })}
+          />
+          <ThresholdField
+            label="Bike ends"
+            seconds={settings.thresholds.bikeEndSec}
+            onCommit={(v) => update({ thresholds: { ...settings.thresholds, bikeEndSec: v } })}
+          />
+          <ThresholdField
+            label="Grace buffer"
+            seconds={settings.thresholds.graceSec}
+            onCommit={(v) => update({ thresholds: { ...settings.thresholds, graceSec: v } })}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Cumulative times, H:MM:SS or MM:SS. Applied live.
+        </p>
+      </FieldSet>
 
-      <label className="flex items-center justify-between gap-3 text-sm">
-        Polling interval (ms)
-        <input
-          type="number"
-          min={500}
-          step={250}
-          value={settings.pollingMs}
-          onChange={(e) => update({ pollingMs: Math.max(500, Number(e.target.value) || 500) })}
-          className="h-9 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        />
-      </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
+      <FieldSet label="Polling">
+        <label className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
+          Interval (ms)
+          <input
+            type="number"
+            min={500}
+            step={250}
+            value={settings.pollingMs}
+            onChange={(e) => update({ pollingMs: Math.max(500, Number(e.target.value) || 500) })}
+            className="h-9 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
+        </label>
+        <Switch
+          label="Always use polling"
           checked={settings.useFallbackAlways}
-          onChange={(e) => update({ useFallbackAlways: e.target.checked })}
-          className="size-4 accent-primary"
+          onCheckedChange={(useFallbackAlways) => update({ useFallbackAlways })}
         />
-        Always use polling
-      </label>
+      </FieldSet>
+    </div>
+  );
+}
+
+/** A labelled group, matching the inspector's label-above rhythm. */
+function FieldSet({
+  label,
+  action,
+  children,
+}: {
+  label: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex min-h-6 items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        {action}
+      </div>
+      {children}
     </div>
   );
 }
@@ -176,11 +197,12 @@ function ThresholdField({
   };
 
   return (
-    <label className="flex items-center justify-between gap-3 text-sm">
-      {label}
+    <label className="flex flex-col gap-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
       <input
         type="text"
         inputMode="numeric"
+        aria-label={label}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
@@ -188,7 +210,7 @@ function ThresholdField({
           if (e.key === "Enter") commit();
         }}
         aria-invalid={invalid}
-        className="h-9 w-28 rounded-md border border-input bg-background px-3 text-sm tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive"
+        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive"
       />
     </label>
   );

@@ -32,6 +32,20 @@ export function contentTypeFor(id: string): string {
   return CONTENT_TYPES[extname(id)] ?? "application/octet-stream";
 }
 
+/**
+ * The readable name for a stored asset, from either its id or its URL.
+ *
+ * Stored ids carry a random uniqueness token (`k3f9x2b1__sportdepot.svg`).
+ * Showing that raw in the UI is unreadable, so strip the path and the token and
+ * leave the name the operator uploaded.
+ */
+export function assetDisplayName(idOrUrl: string): string {
+  const file = idOrUrl.split(/[?#]/)[0].split("/").pop() ?? "";
+  const i = file.indexOf("__");
+  const name = i >= 0 ? file.slice(i + 2) : file;
+  return name || idOrUrl;
+}
+
 const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov"]);
 
 export function isVideoAsset(id: string): boolean {

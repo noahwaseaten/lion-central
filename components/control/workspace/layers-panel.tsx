@@ -70,7 +70,7 @@ export function LayersPanel({
                 type="button"
                 onClick={() => setCollapsed((c) => ({ ...c, [surface.id]: !c[surface.id] }))}
                 aria-expanded={isOpen}
-                className="flex items-center gap-1 rounded py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground outline-none transition-colors duration-150 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
+                className="flex items-center gap-1 rounded py-0.5 text-xs font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
               >
                 {isOpen ? <CaretDown className="size-3" /> : <CaretRight className="size-3" />}
                 {surface.label}

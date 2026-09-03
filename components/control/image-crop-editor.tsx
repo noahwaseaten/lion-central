@@ -153,8 +153,8 @@ export function ImageCropEditor({
     return () => canvas.removeEventListener("wheel", onWheel);
   }, [w, h, onChange, src]);
 
-  const reset = (patch: Partial<ImageTransform>) =>
-    onChange({ ...transform, scale: 1, offset: { x: 0, y: 0 }, ...patch });
+  /** Clear zoom and pan, back to the fit baseline. */
+  const reset = () => onChange({ ...transform, scale: 1, offset: { x: 0, y: 0 } });
 
   return (
     <div className="flex flex-col gap-3">
@@ -182,13 +182,35 @@ export function ImageCropEditor({
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
-        <Button type="button" variant="outline" size="sm" onClick={() => reset({ fit: "contain" })}>
+        {/* A segmented pair, not two plain buttons: `fit` is stored per image but
+            the old buttons never showed which one was in effect. Switching also
+            no longer throws away the zoom and pan you just set by hand. */}
+        <Button
+          type="button"
+          variant={transform.fit === "contain" ? "default" : "outline"}
+          size="sm"
+          aria-pressed={transform.fit === "contain"}
+          onClick={() => onChange({ ...transform, fit: "contain" })}
+        >
           Fit
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => reset({ fit: "cover" })}>
+        <Button
+          type="button"
+          variant={transform.fit === "cover" ? "default" : "outline"}
+          size="sm"
+          aria-pressed={transform.fit === "cover"}
+          onClick={() => onChange({ ...transform, fit: "cover" })}
+        >
           Fill
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => reset({})}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          title="Clear zoom and pan"
+          disabled={transform.scale === 1 && transform.offset.x === 0 && transform.offset.y === 0}
+          onClick={reset}
+        >
           <ArrowCounterClockwise />
           Reset
         </Button>

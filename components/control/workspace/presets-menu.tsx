@@ -72,7 +72,7 @@ export function PresetsMenu({
         )}
 
         <div className="mt-3 border-t border-border pt-3">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs font-medium text-muted-foreground">
             Save current layout
           </span>
           <div className="mt-1.5 flex gap-1.5">
@@ -97,7 +97,7 @@ export function PresetsMenu({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-2 flex flex-col gap-0.5 last:mb-0">
-      <span className="px-1 pb-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="px-1 pb-0.5 text-xs font-medium text-muted-foreground">
         {label}
       </span>
       {children}

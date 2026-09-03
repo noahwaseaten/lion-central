@@ -1,10 +1,20 @@
 "use client";
 
+import { ArrowDown, ArrowUp, X } from "@phosphor-icons/react";
 import { useState } from "react";
 
+import { AssetThumb } from "@/components/control/asset-thumb";
 import { ImageCropEditor } from "@/components/control/image-crop-editor";
 import { MediaLibraryTrigger } from "@/components/control/media-library";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { assetDisplayName } from "@/lib/arc/assets-shared";
+import {
+  applyFramingToAll,
+  framingOf,
+  moveItem,
+  removeAt,
+} from "@/lib/arc/sponsor-items";
 import {
   defaultTransform,
   type Fit,
@@ -14,6 +24,7 @@ import {
   type WeatherCondition,
   type ZoneContent,
 } from "@/lib/arc/content";
+import { cn } from "@/lib/utils";
 
 const inputCls =
   "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -219,21 +230,19 @@ function SponsorFields({
 }) {
   const [openSrc, setOpenSrc] = useState<string | null>(null);
   const srcs = content.items.map((i) => i.src);
+  const setItems = (items: SponsorItem[]) => onChange({ ...content, items });
 
   // Toggle a logo's membership; new logos get a default transform.
   const toggle = (url: string) => {
-    const has = srcs.includes(url);
-    const items: SponsorItem[] = has
-      ? content.items.filter((i) => i.src !== url)
-      : [...content.items, { src: url, ...defaultTransform() }];
-    onChange({ ...content, items });
+    setItems(
+      srcs.includes(url)
+        ? content.items.filter((i) => i.src !== url)
+        : [...content.items, { src: url, ...defaultTransform() }],
+    );
   };
 
   const patchItem = (src: string, t: ImageTransform) =>
-    onChange({
-      ...content,
-      items: content.items.map((i) => (i.src === src ? { ...i, ...t } : i)),
-    });
+    setItems(content.items.map((i) => (i.src === src ? { ...i, ...t } : i)));
 
   // Each cell's aspect ≈ component aspect ÷ columns-vs-rows; component aspect is a
   // good-enough preview ratio for per-logo cropping.
@@ -307,48 +316,164 @@ function SponsorFields({
 
       <MediaLibraryTrigger mode="multi" selected={srcs} onPick={toggle} />
 
-      {content.items.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              {content.items.length} logo{content.items.length === 1 ? "" : "s"} — click to crop
-            </span>
-            <button
-              type="button"
-              onClick={() => onChange({ ...content, items: [] })}
-              className="rounded px-1.5 py-0.5 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Clear
-            </button>
-          </div>
+      <SponsorList
+        items={content.items}
+        cellAspect={cellAspect}
+        openSrc={openSrc}
+        onToggleOpen={(src) => setOpenSrc((s) => (s === src ? null : src))}
+        onItems={setItems}
+        onPatch={patchItem}
+      />
+    </div>
+  );
+}
 
-          {content.items.map((item) => (
-            <div key={item.src} className="rounded-md border border-border">
+/**
+ * The per-logo list.
+ *
+ * Order is meaningful — it is the grid's placement and the rotation's sequence —
+ * so it is editable here rather than being an accident of the order you clicked
+ * things in the library. Each row can be removed on its own, and one row's
+ * framing can be pushed across the board instead of being repeated by hand.
+ */
+function SponsorList({
+  items,
+  cellAspect,
+  openSrc,
+  onToggleOpen,
+  onItems,
+  onPatch,
+}: {
+  items: SponsorItem[];
+  cellAspect: number;
+  openSrc: string | null;
+  onToggleOpen: (src: string) => void;
+  onItems: (items: SponsorItem[]) => void;
+  onPatch: (src: string, t: ImageTransform) => void;
+}) {
+  if (items.length === 0) {
+    return (
+      <p className="rounded-md border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+        No logos yet. Browse the library to add some.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className={labelCls}>
+          {items.length} logo{items.length === 1 ? "" : "s"}
+        </span>
+        <button
+          type="button"
+          onClick={() => onItems([])}
+          className="rounded px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Clear
+        </button>
+      </div>
+
+      {items.map((item, index) => {
+        const isOpen = item.src === openSrc;
+        const name = assetDisplayName(item.src);
+        return (
+          <div
+            key={item.src}
+            className={cn("rounded-md border", isOpen ? "border-ring" : "border-border")}
+          >
+            <div className="flex items-center gap-1 pr-1">
               <button
                 type="button"
-                onClick={() => setOpenSrc((s) => (s === item.src ? null : item.src))}
-                aria-expanded={openSrc === item.src}
-                className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => onToggleOpen(item.src)}
+                aria-expanded={isOpen}
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- uploaded logo, not a build asset */}
-                <img src={item.src} alt="" className="size-6 shrink-0 rounded object-contain" />
-                <span className="flex-1 truncate text-muted-foreground">{item.src.split("/").pop()}</span>
+                <AssetThumb src={item.src} className="size-6 rounded" />
+                <span className="min-w-0 flex-1 truncate text-muted-foreground" title={name}>
+                  {name}
+                </span>
               </button>
-              {openSrc === item.src && (
-                <div className="border-t border-border p-2">
-                  <ImageCropEditor
-                    src={item.src}
-                    transform={item}
-                    aspect={cellAspect}
-                    onChange={(t) => patchItem(item.src, t)}
-                  />
-                </div>
-              )}
+
+              <RowButton
+                label={`Move ${name} up`}
+                disabled={index === 0}
+                onClick={() => onItems(moveItem(items, index, index - 1))}
+              >
+                <ArrowUp />
+              </RowButton>
+              <RowButton
+                label={`Move ${name} down`}
+                disabled={index === items.length - 1}
+                onClick={() => onItems(moveItem(items, index, index + 1))}
+              >
+                <ArrowDown />
+              </RowButton>
+              <RowButton
+                label={`Remove ${name}`}
+                onClick={() => onItems(removeAt(items, index))}
+                className="hover:text-destructive"
+              >
+                <X />
+              </RowButton>
             </div>
-          ))}
-        </div>
-      )}
+
+            {isOpen && (
+              <div className="flex flex-col gap-2 border-t border-border p-2">
+                <ImageCropEditor
+                  src={item.src}
+                  transform={item}
+                  aspect={cellAspect}
+                  onChange={(t) => onPatch(item.src, t)}
+                />
+                {items.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onItems(applyFramingToAll(items, framingOf(item)))}
+                  >
+                    Use this framing for all logos
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+function RowButton({
+  label,
+  disabled,
+  onClick,
+  className,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "grid size-6 shrink-0 place-items-center rounded text-muted-foreground outline-none transition-colors",
+        "hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+        "disabled:pointer-events-none disabled:opacity-30 [&_svg]:size-3.5",
+        className,
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
