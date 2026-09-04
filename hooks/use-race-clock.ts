@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { pushLive, subscribeLive } from "@/lib/live/client";
 
 interface ClockState {
   /** "countdown" ticks down to zero, then auto-flips to "elapsed" at zero. */
@@ -36,6 +38,10 @@ export function useRaceClock() {
   const [state, setState] = useState<ClockState>(DEFAULT);
   const [nowMs, setNowMs] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  // Set right before applying a server-pushed update, so the write-back effect
+  // below can tell "I just received this" apart from "the operator changed
+  // this locally" and skip re-pushing it (which would otherwise ping-pong).
+  const suppressPushRef = useRef(false);
 
   // One-time hydrate from localStorage after mount (SSR-safe).
   useEffect(() => {
@@ -57,21 +63,23 @@ export function useRaceClock() {
     } catch {
       // ignore
     }
+    if (suppressPushRef.current) {
+      suppressPushRef.current = false;
+      return;
+    }
+    void pushLive("clock", state);
   }, [state, loaded]);
 
-  // Keep other tabs (e.g. /output/clock) in sync with start/pause/reset/set.
+  // Keep every other client — other tabs, and (via the server) other machines
+  // like a tunneled `/output/clock` or an OBS browser source — in sync with
+  // start/pause/reset/set.
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== KEY || !e.newValue) return;
-      try {
-        setState({ ...DEFAULT, ...(JSON.parse(e.newValue) as Partial<ClockState>) });
-        setNowMs(Date.now());
-      } catch {
-        // ignore malformed broadcast
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    return subscribeLive((live) => {
+      if (!live.clock) return;
+      suppressPushRef.current = true;
+      setState({ ...DEFAULT, ...(live.clock as Partial<ClockState>) });
+      setNowMs(Date.now());
+    });
   }, []);
 
   // Tick only while running; setState lives in the interval callback (allowed).

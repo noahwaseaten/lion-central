@@ -14,6 +14,7 @@ import {
   type NormRect,
 } from "@/lib/arc/layout-model";
 import type { SurfaceId } from "@/lib/arc/surfaces";
+import { fetchLiveSnapshot, pushLive, subscribeLive } from "@/lib/live/client";
 
 const LIVE_KEY = "lion-central.arc";
 const DRAFT_KEY = "lion-central.arc.draft";
@@ -128,11 +129,16 @@ export function useArcConfig(mode: "live" | "draft" = "live") {
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- hydrate persisted config once on mount */
+    let usedFallback = false;
     try {
       const raw =
         localStorage.getItem(key) ??
         (mode === "draft" ? localStorage.getItem(LIVE_KEY) : null);
-      if (raw) setConfig(migrate(JSON.parse(raw)));
+      if (raw) {
+        setConfig(migrate(JSON.parse(raw)));
+      } else {
+        usedFallback = true;
+      }
       // If a draft already exists and differs from live, start dirty.
       if (mode === "draft") {
         const draftRaw = localStorage.getItem(DRAFT_KEY);
@@ -141,9 +147,25 @@ export function useArcConfig(mode: "live" | "draft" = "live") {
       }
     } catch {
       // ignore corrupt storage
+      usedFallback = true;
     }
     setLoaded(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+
+    // Nothing in this browser at all (a fresh machine — e.g. someone opening
+    // the tunneled control page for the first time): pull the host's current
+    // published layout from the server instead of starting from the default.
+    if (usedFallback) {
+      let cancelled = false;
+      void (async () => {
+        const snapshot = await fetchLiveSnapshot();
+        if (cancelled || !snapshot.arc) return;
+        setConfig(migrate(snapshot.arc));
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -175,11 +197,24 @@ export function useArcConfig(mode: "live" | "draft" = "live") {
     return () => window.removeEventListener("storage", onStorage);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /** Push the current draft to the live key so output tabs update. */
+  // Live mode only: reflect the server-pushed layout in real time, so output
+  // routes stay in sync across machines (a tunneled PC, an OBS browser
+  // source) — the `storage` event above only reaches other tabs on this
+  // same browser.
+  useEffect(() => {
+    if (mode !== "live") return;
+    return subscribeLive((live) => {
+      if (!live.arc) return;
+      setConfig(migrate(live.arc));
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Push the current draft to the live key (and the server) so every output client updates. */
   const publish = useCallback(() => {
     try {
       localStorage.setItem(LIVE_KEY, JSON.stringify(config));
       setIsDirty(false);
+      void pushLive("arc", config);
     } catch {
       // ignore quota / privacy mode
     }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { AnnouncementRecord } from "@/lib/arc/render/inputs";
+import { pushLive, subscribeLive } from "@/lib/live/client";
 
 const STORAGE_KEY = "lion-central.arc.announcement";
 
@@ -28,15 +29,16 @@ export function useAnnouncement(): {
 } {
   const [announcement, setAnnouncement] = useState<AnnouncementRecord | null>(null);
 
-  // Load from localStorage on mount + listen for cross-tab changes.
+  // Load from localStorage on mount, then keep every other client — other
+  // tabs, and (via the server) other machines like a tunneled `/output/*` or
+  // an OBS browser source — in sync with send/extend/cancel.
   useEffect(() => {
     setAnnouncement(readRecord());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY) return;
-      setAnnouncement(readRecord());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    return subscribeLive((live) => {
+      if (!("announcement" in live)) return;
+      const rec = live.announcement as AnnouncementRecord | null;
+      setAnnouncement(rec && (rec.permanent || Date.now() <= rec.endsAt) ? rec : null);
+    });
   }, []);
 
   // Auto-expire: clear local state when endsAt passes (permanent ones never do).
@@ -61,6 +63,7 @@ export function useAnnouncement(): {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rec));
       setAnnouncement(rec);
+      void pushLive("announcement", rec);
     },
     [],
   );
@@ -78,6 +81,7 @@ export function useAnnouncement(): {
         // ignore quota / privacy mode
       }
       setAnnouncement(next);
+      void pushLive("announcement", next);
     },
     [announcement],
   );
@@ -85,6 +89,7 @@ export function useAnnouncement(): {
   const cancel = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setAnnouncement(null);
+    void pushLive("announcement", null);
   }, []);
 
   return { announcement, send, extend, cancel };
