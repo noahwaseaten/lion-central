@@ -1,0 +1,2641 @@
+[
+  {
+    "id": "c_5ad37965_33",
+    "name": "full",
+    "config": {
+      "background": {
+        "mode": "video",
+        "color": "#ffffff",
+        "videoSrc": "/api/assets/vxukwj0o53lz__modern-geometric-white-abstract-motion-backgroun.mp4"
+      },
+      "surfaceSizes": {
+        "clock": {
+          "w": 280,
+          "h": 96
+        },
+        "topbar": {
+          "w": 1280,
+          "h": 256
+        },
+        "leg-left": {
+          "w": 128,
+          "h": 640
+        },
+        "leg-right": {
+          "w": 128,
+          "h": 640
+        }
+      },
+      "surfaces": {
+        "clock": [
+          {
+            "id": "c_c2955e78_32",
+            "content": {
+              "type": "clock",
+              "numberFlow": true
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "topbar": [
+          {
+            "id": "c_52de8a4c_3",
+            "content": {
+              "type": "feed"
+            },
+            "rect": {
+              "w": 0.5892266261518078,
+              "h": 0.6509953989103862,
+              "x": 0.20538668692409615,
+              "y": 0.3490046010896138
+            }
+          },
+          {
+            "id": "c_229ac2d2_32",
+            "name": "Primorsko",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/s51id4oa6uny__pricopy.svg",
+              "fit": "contain",
+              "scale": 0.85,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.10769927407372282,
+              "h": 0.34900460108961384,
+              "x": 0.6829872340509611,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_85295b4b_31",
+            "name": "Lion Banner",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/8lkhgfju2ruq__lionbaner.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.365974468101922,
+              "h": 0.34900460108961384,
+              "x": 0.317012765949039,
+              "y": 7.632783294297951e-17
+            }
+          },
+          {
+            "id": "c_be2715cd_33",
+            "name": "Primorsko",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/s51id4oa6uny__pricopy.svg",
+              "fit": "contain",
+              "scale": 0.85,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.10019543105083464,
+              "h": 0.34900460108961384,
+              "x": 0.2242270485584219,
+              "y": 7.134050294954619e-17
+            }
+          },
+          {
+            "id": "c_cf41e1e4_8",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/0jr7c6o42rxu__winner.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.13,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.20139408955275306,
+              "h": 0.5,
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_6aa2e99c_10",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.05,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.20139408955275306,
+              "h": 0.5,
+              "x": 0,
+              "y": 0.5
+            }
+          },
+          {
+            "id": "c_86dd09a1_11",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
+              "fit": "contain",
+              "scale": 0.95,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.05,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.18660741598020475,
+              "h": 0.5,
+              "x": 0.8133925840197953,
+              "y": 0.03833262070387658
+            }
+          },
+          {
+            "id": "c_62a8d90e_12",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.12,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.1979604539277604,
+              "h": 0.4716673792961234,
+              "x": 0.8020395460722396,
+              "y": 0.5283326207038765
+            }
+          }
+        ],
+        "leg-left": [
+          {
+            "id": "c_f2458ab4_5",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/gwr7ltfo2ruk__hecsolar.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/z0fg9mle2rx6__trek.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/dtqsijqq2rws__silabg.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/jtig02h32ruu__lionhotal.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/b52w4y6l2rt5__biofresh.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/itpl039d2ruo__heineken.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ian60ou22rud__epic.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "leg-right": [
+          {
+            "id": "c_ea9b39eb_6",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/ij95s7zk2ruw__nike.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/pywp6k1r2rww__speedo.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/wsilib8q2ru6__drwitt.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/830kq1dt2rte__capital.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/395teecu2rxn__velinof.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/2st77jx02ru2__doppel.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0raz586q2rw2__print.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/9bkwc8p22rx3__traki.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f2e2ung32rtl__comnet.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/59kzak3j2rua__ekotoi.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": 1,
+              "cellPadding": 0.08
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "c_9e8e2a98_45",
+    "name": "global",
+    "config": {
+      "background": {
+        "mode": "video",
+        "color": "#ffffff",
+        "videoSrc": "/api/assets/vxukwj0o53lz__modern-geometric-white-abstract-motion-backgroun.mp4"
+      },
+      "surfaceSizes": {
+        "clock": {
+          "w": 280,
+          "h": 96
+        },
+        "topbar": {
+          "w": 1280,
+          "h": 256
+        },
+        "leg-left": {
+          "w": 128,
+          "h": 640
+        },
+        "leg-right": {
+          "w": 128,
+          "h": 640
+        }
+      },
+      "surfaces": {
+        "clock": [
+          {
+            "id": "c_c2955e78_32",
+            "content": {
+              "type": "clock",
+              "numberFlow": true
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "topbar": [
+          {
+            "id": "c_85295b4b_31",
+            "name": "Lion Banner",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/8lkhgfju2ruq__lionbaner.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.34797619894410725,
+              "h": 0.5,
+              "x": 0.3344900963950008,
+              "y": 0.020000000000000046
+            }
+          },
+          {
+            "id": "c_d4c568c4_37",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/0jr7c6o42rxu__winner.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.05,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.1681730591911143,
+              "h": 0.44913592906971844,
+              "x": 0.01,
+              "y": 0.025432035465140765
+            }
+          },
+          {
+            "id": "c_5e85edc6_38",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.05,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.17649812689681318,
+              "h": 0.5,
+              "x": 0,
+              "y": 0.47
+            }
+          },
+          {
+            "id": "c_3791db71_39",
+            "content": {
+              "type": "text",
+              "title": "ULTRA CROSS TRIATHLON",
+              "subtitle": "",
+              "font": {
+                "source": "custom",
+                "family": "Ristretto Slab Pro Extra Light",
+                "url": "/api/fonts/a55cm2w17xei.otf"
+              },
+              "size": 1,
+              "letterSpacing": 0.07
+            },
+            "rect": {
+              "w": 0.4120243308988232,
+              "h": 0.47,
+              "x": 0.30246603041764286,
+              "y": 0.5
+            }
+          },
+          {
+            "id": "c_6073a91b_40",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/oaeauxci2rv2__primorsko.svg",
+              "fit": "contain",
+              "scale": 0.7497615922390434,
+              "offset": {
+                "x": -0.007151157484948989,
+                "y": 0.0022299025230512874
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.1520238010558928,
+              "h": 0.44913592906971844,
+              "x": 0.18246629533910802,
+              "y": 0.04
+            }
+          },
+          {
+            "id": "c_a02b2f56_41",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/oaeauxci2rv2__primorsko.svg",
+              "fit": "contain",
+              "scale": 0.744159414723121,
+              "offset": {
+                "x": 0.0033009671878123153,
+                "y": -0.009154071359603515
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.1520238010558928,
+              "h": 0.44913592906971844,
+              "x": 0.6824662953391081,
+              "y": 0.03999999999999998
+            }
+          },
+          {
+            "id": "c_22b98d34_42",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
+              "fit": "contain",
+              "scale": 0.95,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.05,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.1764981268968132,
+              "h": 0.5015301837473447,
+              "x": 0.8235018731031868,
+              "y": 0.04543203546514078
+            }
+          },
+          {
+            "id": "c_1b31f867_43",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0.05,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.17649812689681318,
+              "h": 0.5508640709302816,
+              "x": 0.8135018731031868,
+              "y": 0.44913592906971844
+            }
+          }
+        ],
+        "leg-left": [
+          {
+            "id": "c_f2458ab4_5",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/gwr7ltfo2ruk__hecsolar.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/z0fg9mle2rx6__trek.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/dtqsijqq2rws__silabg.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/jtig02h32ruu__lionhotal.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/b52w4y6l2rt5__biofresh.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/itpl039d2ruo__heineken.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ian60ou22rud__epic.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "leg-right": [
+          {
+            "id": "c_ea9b39eb_6",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/ij95s7zk2ruw__nike.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/pywp6k1r2rww__speedo.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/wsilib8q2ru6__drwitt.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/830kq1dt2rte__capital.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/395teecu2rxn__velinof.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/2st77jx02ru2__doppel.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0raz586q2rw2__print.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/9bkwc8p22rx3__traki.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f2e2ung32rtl__comnet.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/59kzak3j2rua__ekotoi.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": 1,
+              "cellPadding": 0.08
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "c_21ddba17_47",
+    "name": "sponsor rotate",
+    "config": {
+      "background": {
+        "mode": "video",
+        "color": "#ffffff",
+        "videoSrc": "/api/assets/vxukwj0o53lz__modern-geometric-white-abstract-motion-backgroun.mp4"
+      },
+      "surfaceSizes": {
+        "clock": {
+          "w": 280,
+          "h": 96
+        },
+        "topbar": {
+          "w": 1280,
+          "h": 256
+        },
+        "leg-left": {
+          "w": 128,
+          "h": 640
+        },
+        "leg-right": {
+          "w": 128,
+          "h": 640
+        }
+      },
+      "surfaces": {
+        "clock": [
+          {
+            "id": "c_c2955e78_32",
+            "content": {
+              "type": "clock",
+              "numberFlow": true
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "topbar": [
+          {
+            "id": "c_a61c9d7c_2",
+            "name": "Left shoulder",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/s51id4oa6uny__pricopy.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0jr7c6o42rxu__winner.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "rotate",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 0.20944507671556228,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_85295b4b_31",
+            "name": "Lion Banner",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/8lkhgfju2ruq__lionbaner.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.5812414314091217,
+              "h": 0.5,
+              "x": 0.21823575941030166,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_54ba9180_8",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/s51id4oa6uny__pricopy.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0jr7c6o42rxu__winner.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "rotate",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 0.20944507671556228,
+              "h": 1,
+              "x": 0.7905549232844378,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_a5a10aab_9",
+            "content": {
+              "type": "text",
+              "title": "ULTRA CROSS TRIATHLON",
+              "subtitle": "",
+              "font": {
+                "source": "custom",
+                "family": "Ristretto Slab Pro Extra Light",
+                "url": "/api/fonts/a55cm2w17xei.otf"
+              },
+              "size": 1,
+              "letterSpacing": 0.07
+            },
+            "rect": {
+              "w": 0.49234359193222055,
+              "h": 0.5,
+              "x": 0.25,
+              "y": 0.5
+            }
+          }
+        ],
+        "leg-left": [
+          {
+            "id": "c_f2458ab4_5",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/gwr7ltfo2ruk__hecsolar.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/z0fg9mle2rx6__trek.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/dtqsijqq2rws__silabg.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/jtig02h32ruu__lionhotal.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/b52w4y6l2rt5__biofresh.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/itpl039d2ruo__heineken.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ian60ou22rud__epic.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "leg-right": [
+          {
+            "id": "c_ea9b39eb_6",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/ij95s7zk2ruw__nike.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/pywp6k1r2rww__speedo.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/wsilib8q2ru6__drwitt.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/830kq1dt2rte__capital.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/395teecu2rxn__velinof.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/2st77jx02ru2__doppel.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0raz586q2rw2__print.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/9bkwc8p22rx3__traki.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f2e2ung32rtl__comnet.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/59kzak3j2rua__ekotoi.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": 1,
+              "cellPadding": 0.08
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "c_cfb67115_8",
+    "name": "test",
+    "config": {
+      "background": {
+        "mode": "video",
+        "color": "#ffffff",
+        "videoSrc": "/api/assets/vxukwj0o53lz__modern-geometric-white-abstract-motion-backgroun.mp4"
+      },
+      "surfaceSizes": {
+        "clock": {
+          "w": 280,
+          "h": 96
+        },
+        "topbar": {
+          "w": 1280,
+          "h": 256
+        },
+        "leg-left": {
+          "w": 128,
+          "h": 640
+        },
+        "leg-right": {
+          "w": 128,
+          "h": 640
+        }
+      },
+      "surfaces": {
+        "clock": [
+          {
+            "id": "c_c2955e78_32",
+            "content": {
+              "type": "clock",
+              "numberFlow": true
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "topbar": [
+          {
+            "id": "c_a61c9d7c_2",
+            "name": "Left shoulder",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/s51id4oa6uny__pricopy.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0jr7c6o42rxu__winner.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "rotate",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 0.20944507671556228,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_85295b4b_31",
+            "name": "Lion Banner",
+            "content": {
+              "type": "image",
+              "src": "/api/assets/8lkhgfju2ruq__lionbaner.svg",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "padding": 0,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
+            },
+            "rect": {
+              "w": 0.5812414314091217,
+              "h": 0.5,
+              "x": 0.41875856859087834,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_54ba9180_8",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/s51id4oa6uny__pricopy.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0jr7c6o42rxu__winner.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0.05,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "rotate",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 0.20944507671556228,
+              "h": 1,
+              "x": 0.7905549232844378,
+              "y": 0
+            }
+          },
+          {
+            "id": "c_a5a10aab_9",
+            "content": {
+              "type": "text",
+              "title": "ULTRA CROSS TRIATHLON",
+              "subtitle": "",
+              "font": {
+                "source": "custom",
+                "family": "Ristretto Slab Pro Extra Light",
+                "url": "/api/fonts/a55cm2w17xei.otf"
+              },
+              "size": 1,
+              "letterSpacing": 0.07
+            },
+            "rect": {
+              "w": 0.49234359193222055,
+              "h": 0.5,
+              "x": 0.25,
+              "y": 0.5
+            }
+          }
+        ],
+        "leg-left": [
+          {
+            "id": "c_f2458ab4_5",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/gwr7ltfo2ruk__hecsolar.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/z0fg9mle2rx6__trek.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/dtqsijqq2rws__silabg.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/jtig02h32ruu__lionhotal.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/b52w4y6l2rt5__biofresh.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/itpl039d2ruo__heineken.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/ian60ou22rud__epic.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": "auto",
+              "cellPadding": 0.12
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "leg-right": [
+          {
+            "id": "c_ea9b39eb_6",
+            "content": {
+              "type": "sponsors",
+              "items": [
+                {
+                  "src": "/api/assets/ij95s7zk2ruw__nike.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/pywp6k1r2rww__speedo.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/wsilib8q2ru6__drwitt.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/830kq1dt2rte__capital.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/395teecu2rxn__velinof.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/2st77jx02ru2__doppel.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/0raz586q2rw2__print.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/9bkwc8p22rx3__traki.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f2e2ung32rtl__comnet.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/59kzak3j2rua__ekotoi.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                }
+              ],
+              "mode": "grid",
+              "intervalMs": 5000,
+              "columns": 1,
+              "cellPadding": 0.08
+            },
+            "rect": {
+              "w": 1,
+              "h": 1,
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    }
+  }
+]
