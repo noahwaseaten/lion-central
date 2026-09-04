@@ -8,23 +8,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import type { Preset } from "@/lib/arc/presets";
 
 /**
- * Switch the current layout to a saved preset, save the current layout as a
- * new preset, or — if a preset is currently applied — update it in place
- * with whatever's been edited since.
+ * Switch the current layout to a saved preset, or save the current layout as
+ * a preset (typing the name of an existing one replaces it). Once a preset is
+ * applied, publishing the layout (the toolbar's main Save/Publish) keeps that
+ * preset in sync automatically — no separate "update" step here.
  */
 export function PresetsMenu({
   custom,
   activePresetId,
   onApply,
   onSave,
-  onUpdate,
   onDelete,
 }: {
   custom: Preset[];
   activePresetId: string | null;
   onApply: (preset: Preset) => void;
   onSave: (name: string) => void;
-  onUpdate: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
   const [open, setOpenRaw] = useState(false);
@@ -32,8 +31,8 @@ export function PresetsMenu({
 
   const active = custom.find((p) => p.id === activePresetId) ?? null;
 
-  // Default the save field to the active preset's name on open, so re-saving
-  // without typing anything updates it rather than silently creating a duplicate.
+  // Default the save field to the active preset's name on open, so saving
+  // without typing anything replaces it rather than creating a duplicate.
   const setOpen = (next: boolean) => {
     if (next) setName(active?.name ?? "");
     setOpenRaw(next);
@@ -44,12 +43,6 @@ export function PresetsMenu({
     setOpen(false);
   };
 
-  const update = () => {
-    if (!active) return;
-    onUpdate(active.id);
-    setOpen(false);
-  };
-
   const save = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -57,8 +50,6 @@ export function PresetsMenu({
     setName("");
     setOpen(false);
   };
-
-  const savingOverActive = active !== null && name.trim().toLowerCase() === active.name.toLowerCase();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -86,19 +77,15 @@ export function PresetsMenu({
           </Section>
         )}
 
-        {active && (
-          <div className={custom.length > 0 ? "mt-3 border-t border-border pt-3" : ""}>
-            <Button type="button" size="sm" className="w-full" onClick={update}>
-              <FloppyDisk weight="bold" />
-              Update &ldquo;{active.name}&rdquo;
-            </Button>
-          </div>
-        )}
-
-        <div className="mt-3 border-t border-border pt-3">
+        <div className={custom.length > 0 ? "mt-3 border-t border-border pt-3" : ""}>
           <span className="text-xs font-medium text-muted-foreground">
-            Save current layout
+            {active ? "Save current layout" : "Save current layout as"}
           </span>
+          {active && (
+            <p className="mt-0.5 text-xs text-muted-foreground/70">
+              Publishing keeps &ldquo;{active.name}&rdquo; in sync — save here only to rename or branch off a copy.
+            </p>
+          )}
           <div className="mt-1.5 flex gap-1.5">
             <input
               value={name}
@@ -109,7 +96,7 @@ export function PresetsMenu({
             />
             <Button type="button" size="sm" variant="outline" onClick={save} disabled={!name.trim()}>
               <FloppyDisk weight="bold" />
-              {savingOverActive ? "Update" : "Save as new"}
+              Save
             </Button>
           </div>
         </div>

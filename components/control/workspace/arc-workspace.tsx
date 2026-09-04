@@ -189,7 +189,13 @@ export function ArcWorkspace() {
           feedSettings={settings}
           feedStatus={status}
           clock={{ elapsed, running, mode, start, pause, reset }}
-          onPublish={publish}
+          onPublish={() => {
+            publish();
+            // Publishing is the operator's "save" — if a preset is currently
+            // applied, keep it in sync automatically rather than requiring a
+            // separate update step.
+            if (activePresetId) updatePreset(activePresetId, config);
+          }}
           isDirty={isDirty}
           history={{ undo, redo, canUndo, canRedo }}
           announcementControls={{
@@ -207,7 +213,6 @@ export function ArcWorkspace() {
               setActivePresetId(preset.id);
             },
             onSave: (name) => setActivePresetId(save(name, config)),
-            onUpdate: (id) => updatePreset(id, config),
             onDelete: (id) => {
               remove(id);
               setActivePresetId((current) => (current === id ? null : current));

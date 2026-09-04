@@ -40,7 +40,6 @@ interface PresetControls {
   activePresetId: string | null;
   onApply: (preset: Preset) => void;
   onSave: (name: string) => void;
-  onUpdate: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -87,7 +86,6 @@ export function TopToolbar({
         activePresetId={presets.activePresetId}
         onApply={presets.onApply}
         onSave={presets.onSave}
-        onUpdate={presets.onUpdate}
         onDelete={presets.onDelete}
       />
       <ClockMini
