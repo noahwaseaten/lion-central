@@ -69,7 +69,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `ZoneInspector` (right rail) — inspector for the selected component; content type switcher + per-type controls + feed/clock settings
 
 ### Presets (`lib/arc/presets.ts` + `hooks/use-presets.ts`)
-Full-layout snapshots applied via `replaceConfig`. Built-ins in `presets.ts`; custom presets saved to localStorage via `use-presets.ts`.
+Full-layout snapshots, applied via `replaceConfig` and persisted to localStorage via `use-presets.ts` — no built-ins, operator-saved only. The workspace tracks which preset (if any) is currently applied so "Update" can re-save it in place by id; "Save as new" always creates/replaces by name.
 
 ### Logo / asset library
 - Server-side storage: `ASSETS_DIR` env (else `<cwd>/.lion-assets`), served by `app/api/assets/*`

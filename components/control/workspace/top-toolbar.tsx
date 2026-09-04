@@ -36,10 +36,11 @@ interface ClockControls {
 }
 
 interface PresetControls {
-  builtins: Preset[];
   custom: Preset[];
-  onApply: (config: ArcConfig) => void;
+  activePresetId: string | null;
+  onApply: (preset: Preset) => void;
   onSave: (name: string) => void;
+  onUpdate: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -82,10 +83,11 @@ export function TopToolbar({
       <span className="mx-1 h-5 w-px bg-border" />
       <OutputsMenu />
       <PresetsMenu
-        builtins={presets.builtins}
         custom={presets.custom}
+        activePresetId={presets.activePresetId}
         onApply={presets.onApply}
         onSave={presets.onSave}
+        onUpdate={presets.onUpdate}
         onDelete={presets.onDelete}
       />
       <ClockMini

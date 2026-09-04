@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { type ArcConfig, migrate, newId } from "@/lib/arc/layout-model";
-import { BUILTIN_PRESETS, type Preset } from "@/lib/arc/presets";
+import type { Preset } from "@/lib/arc/presets";
 
 const KEY = "lion-central.presets";
 
@@ -28,9 +28,10 @@ function load(): Preset[] {
 const clone = (c: ArcConfig): ArcConfig => JSON.parse(JSON.stringify(c)) as ArcConfig;
 
 /**
- * Custom saved layouts, persisted to localStorage and merged after the built-ins.
- * Built-ins are read-only; custom presets can be saved (replacing one of the same
- * name) and deleted.
+ * Saved layouts (full-layout snapshots), persisted to localStorage. Save as
+ * new (replacing one of the same name) or update an existing preset in place
+ * by id — the workspace uses `update` to sync the preset it currently has
+ * applied without needing to retype its name.
  */
 export function usePresets() {
   const [custom, setCustom] = useState<Preset[]>([]);
@@ -59,18 +60,26 @@ export function usePresets() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const save = useCallback((name: string, config: ArcConfig) => {
+  /** Save as a new preset (or replace one of the same name); returns its id. */
+  const save = useCallback((name: string, config: ArcConfig): string | null => {
     const trimmed = name.trim();
-    if (!trimmed) return;
+    if (!trimmed) return null;
+    const id = newId();
     setCustom((list) => {
       const without = list.filter((p) => p.name.toLowerCase() !== trimmed.toLowerCase());
-      return [...without, { id: newId(), name: trimmed, config: clone(config) }];
+      return [...without, { id, name: trimmed, config: clone(config) }];
     });
+    return id;
+  }, []);
+
+  /** Update an existing preset's layout in place, keeping its id and name. */
+  const update = useCallback((id: string, config: ArcConfig) => {
+    setCustom((list) => list.map((p) => (p.id === id ? { ...p, config: clone(config) } : p)));
   }, []);
 
   const remove = useCallback((id: string) => {
     setCustom((list) => list.filter((p) => p.id !== id));
   }, []);
 
-  return { builtins: BUILTIN_PRESETS, custom, presets: [...BUILTIN_PRESETS, ...custom], save, remove };
+  return { custom, save, update, remove };
 }

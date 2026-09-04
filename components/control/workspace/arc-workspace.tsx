@@ -14,6 +14,7 @@ import { usePresets } from "@/hooks/use-presets";
 import { useRaceClock } from "@/hooks/use-race-clock";
 import { type ContentType, defaultContent, type ZoneContent } from "@/lib/arc/content";
 import type { NormRect, Selection } from "@/lib/arc/layout-model";
+import type { Preset } from "@/lib/arc/presets";
 import type { SurfaceInputs } from "@/lib/arc/render/inputs";
 import type { SurfaceId } from "@/lib/arc/surfaces";
 
@@ -53,7 +54,10 @@ export function ArcWorkspace() {
     canUndo,
     canRedo,
   } = useArcConfig("draft");
-  const { builtins, custom, save, remove } = usePresets();
+  const { custom, save, update: updatePreset, remove } = usePresets();
+  // The preset (if any) currently applied to the draft — tracked so "Update"
+  // can re-save it in place without the operator retyping its name.
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
   const { settings, update } = useFeedSettings();
   const online = useOnlineStatus();
   const { entries, status } = useFeed({
@@ -195,14 +199,19 @@ export function ArcWorkspace() {
             cancel: cancelAnnouncement,
           }}
           presets={{
-            builtins,
             custom,
-            onApply: (c) => {
-              replaceConfig(c);
+            activePresetId,
+            onApply: (preset: Preset) => {
+              replaceConfig(preset.config);
               setSelected(null);
+              setActivePresetId(preset.id);
             },
-            onSave: (name) => save(name, config),
-            onDelete: remove,
+            onSave: (name) => setActivePresetId(save(name, config)),
+            onUpdate: (id) => updatePreset(id, config),
+            onDelete: (id) => {
+              remove(id);
+              setActivePresetId((current) => (current === id ? null : current));
+            },
           }}
         />
 
