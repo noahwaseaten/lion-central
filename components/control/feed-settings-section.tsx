@@ -116,10 +116,6 @@ export function FeedSettingsSection({
           seconds={settings.offsets.halfOffsetSec}
           onCommit={(v) => update({ offsets: { ...settings.offsets, halfOffsetSec: v } })}
         />
-        <p className="text-xs text-muted-foreground">
-          Halves start later but share the feed&rsquo;s gun time. H:MM:SS or MM:SS, applied live —
-          the feed file is never changed. With 3:00:00 set, a 4:30:00 half shows as 1:30:00.
-        </p>
       </FieldSet>
 
       <FieldSet label="Categories">
