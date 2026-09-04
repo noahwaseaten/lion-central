@@ -300,31 +300,24 @@ function paintText(
 ): void {
   const fontFamily = resolveFont(content.font);
   const hasSub = !!content.subtitle?.trim();
-  ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // Letter-spacing widens the text fitFont measures, so seed it with the
-  // spacing at the max allowed size before fitting — a safe upper bound that
-  // never lets the final (equal-or-smaller) spacing overflow the box.
   const maxTitlePx = hasSub ? h * 0.5 : h * 0.6;
-  ctx.letterSpacing = `${(content.letterSpacing * maxTitlePx).toFixed(2)}px`;
-  const titlePx = fitFont(ctx, content.title || " ", w * 0.92, maxTitlePx, "800", fontFamily) * content.size;
+  const titlePx =
+    fitFont(ctx, content.title || " ", w * 0.92, maxTitlePx, "800", fontFamily, content.letterSpacing) * content.size;
   ctx.fillStyle = "#0a0a0a";
   ctx.font = `800 ${titlePx}px ${fontFamily}`;
-  ctx.letterSpacing = `${(content.letterSpacing * titlePx).toFixed(2)}px`;
   const ty = hasSub ? h * 0.4 : h * 0.5;
-  ctx.fillText(content.title, w / 2, ty);
+  fillTextSpaced(ctx, content.title, w / 2, ty, content.letterSpacing * titlePx);
 
   if (hasSub) {
     const maxSubPx = h * 0.3;
-    ctx.letterSpacing = `${(content.letterSpacing * maxSubPx).toFixed(2)}px`;
-    const subPx = fitFont(ctx, content.subtitle!, w * 0.86, maxSubPx, "500", fontFamily) * content.size;
+    const subPx =
+      fitFont(ctx, content.subtitle!, w * 0.86, maxSubPx, "500", fontFamily, content.letterSpacing) * content.size;
     ctx.font = `500 ${subPx}px ${fontFamily}`;
-    ctx.letterSpacing = `${(content.letterSpacing * subPx).toFixed(2)}px`;
     ctx.fillStyle = "#52525b";
-    ctx.fillText(content.subtitle!, w / 2, h * 0.74);
+    fillTextSpaced(ctx, content.subtitle!, w / 2, h * 0.74, content.letterSpacing * subPx);
   }
-  ctx.letterSpacing = "0px";
 }
 
 /** Emoji glyphs — simplest way to render an "icon" onto a plain 2D canvas, no asset/font loading needed. */
@@ -400,9 +393,15 @@ function drawSponsorLogo(
   alpha: number,
 ): void {
   const img = getImage(it.src);
-  if (!img || img.naturalWidth === 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
+  if (!img || img.naturalWidth === 0) {
+    // Loading (or failed and mid-retry) — show a placeholder instead of
+    // leaving the slot blank, so a slow/flaky logo never just vanishes.
+    placeholder(ctx, 8, 8, w - 16, h - 16, "LOGO");
+    ctx.restore();
+    return;
+  }
   if (it.background) {
     ctx.fillStyle = it.background;
     ctx.fillRect(0, 0, w, h);
@@ -641,14 +640,54 @@ export function fitFont(
   maxPx: number,
   weight: string,
   fontFamily: string = FONT,
+  letterSpacingEm = 0,
 ): number {
   let px = Math.floor(maxPx);
   do {
     ctx.font = `${weight} ${px}px ${fontFamily}`;
-    if (ctx.measureText(text).width <= maxW) break;
+    if (measureSpaced(ctx, text, letterSpacingEm * px) <= maxW) break;
     px -= 2;
   } while (px > 8);
   return px;
+}
+
+/**
+ * Total width of `text` at the context's current font, plus `spacingPx`
+ * between every pair of characters. Falls back to a plain whole-string
+ * measurement (preserving kerning/ligatures) when there's no spacing to add.
+ */
+function measureSpaced(ctx: CanvasRenderingContext2D, text: string, spacingPx: number): number {
+  if (!spacingPx) return ctx.measureText(text).width;
+  const chars = Array.from(text);
+  if (chars.length === 0) return 0;
+  let total = spacingPx * (chars.length - 1);
+  for (const c of chars) total += ctx.measureText(c).width;
+  return total;
+}
+
+/**
+ * Draw `text` centered at (cx, cy), manually advancing per character so
+ * letter-spacing renders consistently everywhere the compositor runs — the
+ * newer `CanvasRenderingContext2D.letterSpacing` property isn't supported by
+ * every browser/canvas implementation, so relying on it silently drops the
+ * spacing on some outputs. Leaves `ctx.textAlign` as "center".
+ */
+function fillTextSpaced(ctx: CanvasRenderingContext2D, text: string, cx: number, cy: number, spacingPx: number): void {
+  ctx.textAlign = "center";
+  if (!spacingPx) {
+    ctx.fillText(text, cx, cy);
+    return;
+  }
+  const chars = Array.from(text);
+  const widths = chars.map((c) => ctx.measureText(c).width);
+  const totalWidth = widths.reduce((a, b) => a + b, 0) + spacingPx * (chars.length - 1);
+  ctx.textAlign = "left";
+  let x = cx - totalWidth / 2;
+  chars.forEach((c, i) => {
+    ctx.fillText(c, x, cy);
+    x += widths[i] + spacingPx;
+  });
+  ctx.textAlign = "center";
 }
 
 function ellipsize(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
