@@ -46,6 +46,11 @@ const listeners = new Set<() => void>();
 const pending: { src: string; video: boolean }[] = [];
 let active = 0;
 
+/** A blip (asset not fully written yet, a dropped request) shouldn't leave a thumbnail permanently blank — retry with backoff before giving up. */
+const MAX_RETRIES = 6;
+const RETRY_BASE_MS = 1000;
+const retries = new Map<string, number>();
+
 function emit(): void {
   for (const fn of listeners) fn();
 }
@@ -76,6 +81,7 @@ export function forgetThumbnail(src: string): void {
   if (entry?.status === "ready") URL.revokeObjectURL(entry.src);
   cache.delete(src);
   queued.delete(src);
+  retries.delete(src);
 }
 
 function pump(): void {
@@ -84,11 +90,32 @@ function pump(): void {
     if (!job) return;
     active += 1;
     void rasterise(job.src, job.video)
-      .then((state) => cache.set(job.src, state))
-      .catch(() => cache.set(job.src, { status: "error" }))
+      .then((state) => {
+        cache.set(job.src, state);
+        retries.delete(job.src);
+        queued.delete(job.src);
+      })
+      .catch(() => {
+        const attempt = (retries.get(job.src) ?? 0) + 1;
+        if (attempt > MAX_RETRIES) {
+          cache.set(job.src, { status: "error" });
+          retries.delete(job.src);
+          queued.delete(job.src);
+          return;
+        }
+        // Stay in `queued` for the whole retry window, so a re-render's
+        // requestThumbnail() doesn't pile on a duplicate job in the meantime.
+        retries.set(job.src, attempt);
+        setTimeout(
+          () => {
+            pending.push(job);
+            pump();
+          },
+          RETRY_BASE_MS * 2 ** (attempt - 1),
+        );
+      })
       .finally(() => {
         active -= 1;
-        queued.delete(job.src);
         emit();
         pump();
       });
