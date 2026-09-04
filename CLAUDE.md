@@ -79,7 +79,8 @@ Full-layout snapshots, applied via `replaceConfig` — no built-ins, operator-sa
 ### Live feed feature
 - SSE push via `fs.watch`, polling fallback; `FEED_ROWS` lines from a local `.txt` file
 - Format per line: `BIB FIRSTNAME LASTNAME TIME`
-- Triathlon splits (Swim/Bike/Run) inferred from cumulative TIME vs operator thresholds; colors/labels in `zones.ts`
+- Race category (Ultra / Half / Relay) inferred from the BIB in `lib/feed/categories.ts` — ultra 0–264, half 400–700, relay 800+, anything else `other`; colors/labels in `zones.ts`
+- The feed file is never rewritten. The one display-side correction is `FeedOffsets.halfOffsetSec` (`lib/feed/offsets.ts`): half marathons start later but share the feed's gun time, so the operator's offset is subtracted from half times only, producing `displaySeconds`/`displayTime` while `seconds`/`timeRaw`/`id` stay raw
 - Rendered as an **append-driven ticker** (`lib/arc/render/feed-anim.ts`, per-component-id state): static except when a new athlete appears — then glides up one row, then rests. No perpetual loop.
 - Test: `POST /api/feed/append?file=` writes a random athlete line (toolbar button)
 

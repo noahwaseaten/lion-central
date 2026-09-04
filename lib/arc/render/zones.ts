@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 
 import { formatClock } from "@/lib/feed/format";
-import type { Split } from "@/lib/feed/types";
+import type { RaceCategory } from "@/lib/feed/types";
 
 import type { BackgroundConfig, ImageShadow, WeatherCondition, ZoneContent } from "../content";
 import type { SurfaceId, SurfaceSizes } from "../surfaces";
@@ -39,13 +39,24 @@ export interface Rect {
 /** Target on-screen row height for the feed; row count adapts to the component. */
 const FEED_ROW_PX = 62;
 
-/** Split colors tuned for the white arc (matches :root tokens). */
-export const SPLIT_COLOR: Record<Split, string> = {
-  swim: "#0284c7",
-  bike: "#ea580c",
-  run: "#059669",
+/**
+ * Category colors tuned for the white arc (matches :root tokens). Ultra reads
+ * yellow but sits at yellow-600 — a lighter yellow has too little contrast on
+ * white to stay legible at a distance. "other" is a neutral grey and draws no
+ * category tag, so a bib outside the known windows still shows cleanly.
+ */
+export const CATEGORY_COLOR: Record<RaceCategory, string> = {
+  ultra: "#ca8a04",
+  half: "#0284c7",
+  relay: "#059669",
+  other: "#6b7280",
 };
-const SPLIT_LABEL: Record<Split, string> = { swim: "SWIM", bike: "BIKE", run: "RUN" };
+const CATEGORY_LABEL: Record<RaceCategory, string> = {
+  ultra: "ULTRA",
+  half: "HALF",
+  relay: "RELAY",
+  other: "",
+};
 
 /** Draw one component's content into its region. Local coords are translated to 0,0. */
 export function drawComponent(
@@ -137,7 +148,7 @@ function paintFeed(
   paintEdgeFade(ctx, w, h, inputs.config.background, surfaceId, inputs.config.surfaceSizes, originX, originY);
 }
 
-/** One ticker row: accent bar, bib, name, split label, time. */
+/** One ticker row: accent bar, bib, name, category label, time. */
 function paintFeedRow(
   ctx: CanvasRenderingContext2D,
   w: number,
@@ -146,7 +157,7 @@ function paintFeedRow(
 ): void {
   const { entry: e, y, alpha, fresh } = row;
   if (alpha <= 0.01) return;
-  const color = SPLIT_COLOR[e.split];
+  const color = CATEGORY_COLOR[e.category];
   const cy = y + rowH / 2;
 
   ctx.save();
@@ -175,16 +186,16 @@ function paintFeedRow(
   ctx.fillStyle = "#6b7280";
   ctx.font = `600 19px ${FONT}`;
   ctx.textAlign = "right";
-  ctx.fillText(e.timeRaw, w - 16, cy);
-  const timeW = ctx.measureText(e.timeRaw).width;
+  ctx.fillText(e.displayTime, w - 16, cy);
+  const timeW = ctx.measureText(e.displayTime).width;
 
-  // split label (before time)
+  // category label (before time); "other" has none, so the name gets the room
   ctx.fillStyle = color;
   ctx.font = `bold 13px ${FONT}`;
-  const label = SPLIT_LABEL[e.split];
+  const label = CATEGORY_LABEL[e.category];
   const labelX = w - 28 - timeW;
-  ctx.fillText(label, labelX, cy);
-  const labelW = ctx.measureText(label).width;
+  if (label) ctx.fillText(label, labelX, cy);
+  const labelW = label ? ctx.measureText(label).width : -16;
 
   // name (fills the middle)
   ctx.fillStyle = "#0a0a0a";

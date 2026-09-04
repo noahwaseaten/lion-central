@@ -7,9 +7,17 @@ import { FeedStatusChip } from "@/components/control/workspace/feed-status-chip"
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import type { FeedSettings } from "@/hooks/use-feed-settings";
+import { CATEGORY_COLOR } from "@/lib/arc/render/zones";
 import { formatSeconds } from "@/lib/feed/format";
 import { parseTime } from "@/lib/feed/parse";
 import type { ConnectionStatus } from "@/lib/feed/types";
+
+/** Read-only reference for the operator — bib windows are fixed, not tunable. */
+const CATEGORY_LEGEND = [
+  { label: "Ultra", range: "bib 0\u2013264", color: CATEGORY_COLOR.ultra },
+  { label: "Half", range: "bib 400\u2013700", color: CATEGORY_COLOR.half },
+  { label: "Relay", range: "bib 800+", color: CATEGORY_COLOR.relay },
+];
 
 interface FeedFile {
   name: string;
@@ -23,9 +31,9 @@ const inputCls =
  * Operator controls for the live-feed data source.
  *
  * Laid out the way the rest of the inspector is — every label above its control,
- * one `Switch` rather than a stray raw checkbox — and split by how often an
- * operator touches it: the file and the split thresholds change race to race,
- * the transport settings almost never.
+ * one `Switch` rather than a stray raw checkbox — and grouped by how often an
+ * operator touches it: the file and the half-marathon offset change race to
+ * race, the transport settings almost never.
  */
 export function FeedSettingsSection({
   settings,
@@ -102,27 +110,28 @@ export function FeedSettingsSection({
         )}
       </FieldSet>
 
-      <FieldSet label="Split thresholds">
-        <div className="grid grid-cols-2 gap-2">
-          <ThresholdField
-            label="Swim ends"
-            seconds={settings.thresholds.swimEndSec}
-            onCommit={(v) => update({ thresholds: { ...settings.thresholds, swimEndSec: v } })}
-          />
-          <ThresholdField
-            label="Bike ends"
-            seconds={settings.thresholds.bikeEndSec}
-            onCommit={(v) => update({ thresholds: { ...settings.thresholds, bikeEndSec: v } })}
-          />
-          <ThresholdField
-            label="Grace buffer"
-            seconds={settings.thresholds.graceSec}
-            onCommit={(v) => update({ thresholds: { ...settings.thresholds, graceSec: v } })}
-          />
-        </div>
+      <FieldSet label="Half marathon offset">
+        <TimeField
+          label="Subtract from half times"
+          seconds={settings.offsets.halfOffsetSec}
+          onCommit={(v) => update({ offsets: { ...settings.offsets, halfOffsetSec: v } })}
+        />
         <p className="text-xs text-muted-foreground">
-          Cumulative times, H:MM:SS or MM:SS. Applied live.
+          Halves start later but share the feed&rsquo;s gun time. H:MM:SS or MM:SS, applied live —
+          the feed file is never changed. With 3:00:00 set, a 4:30:00 half shows as 1:30:00.
         </p>
+      </FieldSet>
+
+      <FieldSet label="Categories">
+        <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+          {CATEGORY_LEGEND.map((c) => (
+            <li key={c.label} className="flex items-center gap-2">
+              <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: c.color }} />
+              <span className="text-foreground">{c.label}</span>
+              <span className="tabular-nums">{c.range}</span>
+            </li>
+          ))}
+        </ul>
       </FieldSet>
 
       <FieldSet label="Polling">
@@ -169,7 +178,7 @@ function FieldSet({
 }
 
 /** A H:MM:SS / MM:SS time input that commits parsed seconds. */
-function ThresholdField({
+function TimeField({
   label,
   seconds,
   onCommit,

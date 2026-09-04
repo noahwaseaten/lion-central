@@ -13,7 +13,9 @@ const e = (id: string): FeedEntry => ({
   name: "A B",
   timeRaw: "0:10",
   seconds: 600,
-  split: "swim",
+  category: "ultra",
+  displaySeconds: 600,
+  displayTime: "0:10",
 });
 
 /** Fresh canvas key per test so per-instance state never leaks across tests. */

@@ -1,9 +1,9 @@
 import { appendFile, open, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
+import { NO_OFFSETS } from "./offsets";
 import { parseLines } from "./parse";
-import { DEFAULT_THRESHOLDS } from "./splits";
-import type { FeedSnapshot, SplitThresholds } from "./types";
+import type { FeedOffsets, FeedSnapshot } from "./types";
 
 /**
  * Resolve `name` strictly within `dir`, rejecting path traversal / escapes.
@@ -74,12 +74,12 @@ export async function readSnapshot(
   dir: string,
   name: string,
   count: number,
-  thresholds: SplitThresholds = DEFAULT_THRESHOLDS,
+  offsets: FeedOffsets = NO_OFFSETS,
 ): Promise<FeedSnapshot> {
   const filePath = safeResolve(dir, name);
   const [lines, s] = await Promise.all([
     readLastLines(filePath),
     stat(filePath),
   ]);
-  return { entries: parseLines(lines, count, thresholds), fileMtimeMs: s.mtimeMs };
+  return { entries: parseLines(lines, count, offsets), fileMtimeMs: s.mtimeMs };
 }

@@ -2,17 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { inferSplit } from "@/lib/feed/splits";
+import { applyOffsets } from "@/lib/feed/offsets";
 import type {
   ConnectionStatus,
   FeedEntry,
+  FeedOffsets,
   FeedSnapshot,
-  SplitThresholds,
 } from "@/lib/feed/types";
 
 interface UseFeedParams {
   file: string | null;
-  thresholds: SplitThresholds;
+  offsets: FeedOffsets;
   pollingMs: number;
   useFallbackAlways: boolean;
   online: boolean;
@@ -23,12 +23,12 @@ const FALLBACK_DELAY_MS = 4000;
 
 /**
  * Orchestrates the live feed: opens an SSE stream, falls back to polling when
- * the stream drops, and re-infers each split client-side so threshold edits
- * recolor instantly without a server round-trip.
+ * the stream drops, and re-derives each entry's category and display time
+ * client-side so an offset edit applies instantly without a server round-trip.
  */
 export function useFeed({
   file,
-  thresholds,
+  offsets,
   pollingMs,
   useFallbackAlways,
   online,
@@ -146,8 +146,8 @@ export function useFeed({
   }, [file, pollingMs, useFallbackAlways]);
 
   const entries = useMemo<FeedEntry[]>(
-    () => raw.map((e) => ({ ...e, split: inferSplit(e.seconds, thresholds) })),
-    [raw, thresholds],
+    () => raw.map((e) => applyOffsets(e, offsets)),
+    [raw, offsets],
   );
 
   // Offline is informational: only surface it when the connection is actually struggling.

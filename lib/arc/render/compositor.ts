@@ -2,7 +2,7 @@ import type { Rect } from "./zones";
 import type { SurfaceId } from "../surfaces";
 import { paintBackground } from "./background";
 import type { AnnouncementRecord, SurfaceInputs } from "./inputs";
-import { drawComponent, fitFont, hexA, SPLIT_COLOR } from "./zones";
+import { drawComponent, fitFont, hexA, CATEGORY_COLOR } from "./zones";
 
 export type { SurfaceInputs };
 
@@ -38,13 +38,13 @@ export function drawSurface(
     drawComponent(ctx, rect, comp.content, inputs, tMs, comp.id, surfaceId);
   }
 
-  // Background pulse: faint split-coloured wash painted AFTER components so it
+  // Background pulse: faint category-coloured wash painted AFTER components so it
   // composites uniformly over the whole surface (including feed edge-fades).
   const PULSE_MS = 2000;
-  if (inputs.feed.lastArrivalMs > 0 && inputs.feed.lastArrivalSplit) {
+  if (inputs.feed.lastArrivalMs > 0 && inputs.feed.lastArrivalCategory) {
     const pulseFade = Math.max(0, 1 - (tMs - inputs.feed.lastArrivalMs) / PULSE_MS);
     if (pulseFade > 0) {
-      ctx.fillStyle = hexA(SPLIT_COLOR[inputs.feed.lastArrivalSplit], 0.09 * pulseFade);
+      ctx.fillStyle = hexA(CATEGORY_COLOR[inputs.feed.lastArrivalCategory], 0.09 * pulseFade);
       ctx.fillRect(0, 0, surface.w, surface.h);
     }
   }

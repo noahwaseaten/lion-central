@@ -23,9 +23,9 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
-  --color-swim: var(--swim);
-  --color-bike: var(--bike);
-  --color-run: var(--run);
+  --color-ultra: var(--ultra);
+  --color-half: var(--half);
+  --color-relay: var(--relay);
   --color-brand: var(--brand);
   --color-live: var(--live);
   --color-online: var(--online);
@@ -79,9 +79,9 @@
   --chart-3: oklch(0.596 0.145 163.225);
   --chart-4: oklch(0.508 0.118 165.612);
   --chart-5: oklch(0.432 0.095 166.913);
-  --swim: #0284c7;
-  --bike: #ea580c;
-  --run: #059669;
+  --ultra: #ca8a04;
+  --half: #0284c7;
+  --relay: #059669;
   --brand: #5c6f33;
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
@@ -123,9 +123,9 @@
   --chart-3: oklch(0.596 0.145 163.225);
   --chart-4: oklch(0.508 0.118 165.612);
   --chart-5: oklch(0.432 0.095 166.913);
-  --swim: #38bdf8;
-  --bike: #fb923c;
-  --run: #34d399;
+  --ultra: #facc15;
+  --half: #38bdf8;
+  --relay: #34d399;
   --brand: #9cb35e;
   /* Functional signals — color carries meaning, not decoration. */
   --live: #ef4444;     /* live / recording (broadcast convention) */

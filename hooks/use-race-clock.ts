@@ -36,6 +36,11 @@ const DEFAULT: ClockState = {
  * auto-continues as a normal count-up elapsed clock from zero — no operator
  * action needed at the moment the race actually starts.
  *
+ * Also supports anchoring to an absolute instant: `startAt(epochMs)` runs the
+ * clock from a wall-clock moment (a unix timestamp, or a picked day and time),
+ * so a gun start nobody was at the keyboard for still yields the correct
+ * elapsed time — and a future instant simply sits at zero until it arrives.
+ *
  * Pushes to the server happen only from the setters below (a deliberate
  * operator/local action), never from a generic "state changed" effect — that
  * would also fire right after mount hydration, when `state` is still
@@ -154,6 +159,24 @@ export function useRaceClock() {
     void pushLive("clock", next);
   }, []);
 
+  /**
+   * Run the clock from an absolute instant. Because elapsed is derived from
+   * `startedAtMs` against the current time, a past timestamp lands the clock
+   * mid-race immediately and a future one holds at zero until it passes — no
+   * separate mode needed, and every connected output agrees.
+   */
+  const startAt = useCallback((epochMs: number) => {
+    const next: ClockState = {
+      mode: "elapsed",
+      startedAtMs: epochMs,
+      accumulatedMs: 0,
+      running: true,
+      countdownFromMs: 0,
+    };
+    setState(next);
+    void pushLive("clock", next);
+  }, []);
+
   /** Start a pre-race countdown from `ms` down to zero. */
   const startCountdown = useCallback((ms: number) => {
     const next: ClockState = {
@@ -178,5 +201,8 @@ export function useRaceClock() {
     reset,
     setElapsedMs,
     startCountdown,
+    startAt,
+    /** The instant the clock is anchored to while running; null when paused. */
+    startedAtMs: state.startedAtMs,
   };
 }

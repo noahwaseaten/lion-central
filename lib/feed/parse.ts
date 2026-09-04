@@ -1,5 +1,5 @@
-import { DEFAULT_THRESHOLDS, inferSplit } from "./splits";
-import type { FeedEntry, SplitThresholds } from "./types";
+import { applyOffsets, NO_OFFSETS } from "./offsets";
+import type { FeedEntry, FeedOffsets } from "./types";
 
 /**
  * Parse a TIME token (`HH:MM:SS`, `H:MM:SS`, or `MM:SS`) into seconds.
@@ -35,7 +35,7 @@ function titleCase(token: string): string {
  */
 export function parseLine(
   raw: string,
-  thresholds: SplitThresholds = DEFAULT_THRESHOLDS,
+  offsets: FeedOffsets = NO_OFFSETS,
 ): FeedEntry | null {
   const tokens = raw.trim().split(/\s+/).filter(Boolean);
   if (tokens.length < 3) return null;
@@ -51,16 +51,7 @@ export function parseLine(
   const last = middle.slice(1).join(" ");
   const name = middle.map(titleCase).join(" ");
 
-  return {
-    id: `${bib}-${timeRaw}`,
-    bib,
-    first,
-    last,
-    name,
-    timeRaw,
-    seconds,
-    split: inferSplit(seconds, thresholds),
-  };
+  return applyOffsets({ id: `${bib}-${timeRaw}`, bib, first, last, name, timeRaw, seconds }, offsets);
 }
 
 /**
@@ -70,11 +61,11 @@ export function parseLine(
 export function parseLines(
   lines: string[],
   count: number,
-  thresholds: SplitThresholds = DEFAULT_THRESHOLDS,
+  offsets: FeedOffsets = NO_OFFSETS,
 ): FeedEntry[] {
   const valid: FeedEntry[] = [];
   for (const line of lines) {
-    const entry = parseLine(line, thresholds);
+    const entry = parseLine(line, offsets);
     if (entry) valid.push(entry);
   }
   return valid.slice(-count).reverse();

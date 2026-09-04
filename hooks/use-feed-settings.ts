@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { DEFAULT_THRESHOLDS } from "@/lib/feed/splits";
-import type { SplitThresholds } from "@/lib/feed/types";
+import { NO_OFFSETS } from "@/lib/feed/offsets";
+import type { FeedOffsets } from "@/lib/feed/types";
 import { pushLive, subscribeLive } from "@/lib/live/client";
 
 export interface FeedSettings {
   /** Selected feed filename (within FEED_DIR), or null if none chosen. */
   file: string | null;
-  thresholds: SplitThresholds;
+  /** Display-time corrections applied on top of the raw feed. */
+  offsets: FeedOffsets;
   /** Polling fallback interval in ms. */
   pollingMs: number;
   /** Force polling even when SSE is available (for known-flaky setups). */
@@ -20,10 +21,25 @@ const KEY = "lion-central.live";
 
 const DEFAULTS: FeedSettings = {
   file: null,
-  thresholds: DEFAULT_THRESHOLDS,
+  offsets: NO_OFFSETS,
   pollingMs: 1500,
   useFallbackAlways: false,
 };
+
+/**
+ * Coerce persisted/pushed settings into a complete `FeedSettings`. Nested
+ * `offsets` is merged rather than replaced, so a payload written before a field
+ * existed (or by an older client) still yields a usable object.
+ */
+function normalize(raw: unknown): FeedSettings {
+  if (!raw || typeof raw !== "object") return DEFAULTS;
+  const parsed = raw as Partial<FeedSettings>;
+  return {
+    ...DEFAULTS,
+    ...parsed,
+    offsets: { ...DEFAULTS.offsets, ...parsed.offsets },
+  };
+}
 
 /**
  * Feed settings — cached in localStorage, pushed to the server so every
@@ -31,7 +47,7 @@ const DEFAULTS: FeedSettings = {
  * deliberate operator action), never from a generic "settings changed"
  * effect — that would also fire right after mount hydration, when `settings`
  * is still `DEFAULTS` on a machine with no local cache, and reset everyone's
- * chosen feed file/thresholds.
+ * chosen feed file/offsets.
  */
 export function useFeedSettings() {
   const [settings, setSettings] = useState<FeedSettings>(DEFAULTS);
@@ -46,14 +62,7 @@ export function useFeedSettings() {
     /* eslint-disable react-hooks/set-state-in-effect -- hydrate persisted settings once on mount */
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<FeedSettings>;
-        setSettings({
-          ...DEFAULTS,
-          ...parsed,
-          thresholds: { ...DEFAULTS.thresholds, ...parsed.thresholds },
-        });
-      }
+      if (raw) setSettings(normalize(JSON.parse(raw)));
     } catch {
       // ignore corrupt storage
     }
@@ -78,12 +87,7 @@ export function useFeedSettings() {
   useEffect(() => {
     return subscribeLive((live) => {
       if (!live.feedSettings) return;
-      const parsed = live.feedSettings as Partial<FeedSettings>;
-      setSettings({
-        ...DEFAULTS,
-        ...parsed,
-        thresholds: { ...DEFAULTS.thresholds, ...parsed.thresholds },
-      });
+      setSettings(normalize(live.feedSettings));
     });
   }, []);
 

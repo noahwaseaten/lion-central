@@ -62,13 +62,14 @@ export function ArcWorkspace() {
   const online = useOnlineStatus();
   const { entries, status } = useFeed({
     file: settings.file,
-    thresholds: settings.thresholds,
+    offsets: settings.offsets,
     pollingMs: settings.pollingMs,
     useFallbackAlways: settings.useFallbackAlways,
     online,
   });
-  const { elapsed, running, mode, direction, start, pause, reset, setElapsedMs, startCountdown } = useRaceClock();
-  const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
+  const { elapsed, running, mode, direction, start, pause, reset, setElapsedMs, startCountdown, startAt, startedAtMs } =
+    useRaceClock();
+  const { lastArrivalMs, lastArrivalCategory } = useLastArrival(entries);
   const {
     announcement,
     send: sendAnnouncement,
@@ -187,7 +188,7 @@ export function ArcWorkspace() {
 
   const inputs: SurfaceInputs = {
     config,
-    feed: { entries, status, lastArrivalMs, lastArrivalSplit },
+    feed: { entries, status, lastArrivalMs, lastArrivalCategory },
     clock: { ms: elapsed, running, direction },
     announcement,
   };
@@ -280,7 +281,7 @@ export function ArcWorkspace() {
               feedSettings={settings}
               updateFeed={update}
               feedStatus={status}
-              clock={{ elapsed, running, mode, start, pause, reset, setElapsedMs, startCountdown }}
+              clock={{ elapsed, running, mode, start, pause, reset, setElapsedMs, startCountdown, startAt, startedAtMs }}
             />
           </aside>
         </div>

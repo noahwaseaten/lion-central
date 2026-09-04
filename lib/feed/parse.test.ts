@@ -33,7 +33,8 @@ describe("parseLine", () => {
       name: "Marcus Bennett",
       timeRaw: "00:24:31",
       seconds: 1471,
-      split: "swim",
+      category: "relay",
+      displayTime: "00:24:31",
     });
     expect(e?.id).toBe("1042-00:24:31");
   });
@@ -58,6 +59,19 @@ describe("parseLine", () => {
 
   it("returns null when the time is malformed", () => {
     expect(parseLine("1042 MARCUS BENNETT notatime")).toBeNull();
+  });
+
+  it("applies the half-marathon offset to the displayed time only", () => {
+    const e = parseLine("512 ELENA FISCHER 04:30:00", { halfOffsetSec: 3 * 3600 });
+    expect(e).toMatchObject({
+      category: "half",
+      timeRaw: "04:30:00",
+      seconds: 16200,
+      displayTime: "01:30:00",
+    });
+    // The id stays keyed to the raw feed token, so an offset edit never
+    // re-introduces an athlete the ticker has already animated in.
+    expect(e?.id).toBe("512-04:30:00");
   });
 });
 

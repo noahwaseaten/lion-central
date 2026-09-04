@@ -49,6 +49,8 @@ interface ClockControls {
   reset: () => void;
   setElapsedMs: (ms: number) => void;
   startCountdown: (ms: number) => void;
+  startAt: (epochMs: number) => void;
+  startedAtMs: number | null;
 }
 
 export const ZoneInspector = memo(function ZoneInspector({
@@ -140,6 +142,8 @@ export const ZoneInspector = memo(function ZoneInspector({
               reset={clock.reset}
               setElapsedMs={clock.setElapsedMs}
               startCountdown={clock.startCountdown}
+              startAt={clock.startAt}
+              startedAtMs={clock.startedAtMs}
             />
           </Group>
         )}

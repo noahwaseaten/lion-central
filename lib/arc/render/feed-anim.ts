@@ -20,7 +20,7 @@ const MAX_HISTORY = 60;
 interface TickerState {
   /** Athlete ids in chronological order (oldest first). */
   order: string[];
-  /** Latest entry object per id (split can recolor as thresholds change). */
+  /** Latest entry object per id (category/time can change as the offset changes). */
   byId: Map<string, FeedEntry>;
   /** When each id was first seen on this canvas. */
   firstSeen: Map<string, number>;

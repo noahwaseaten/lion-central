@@ -1,5 +1,4 @@
-import type { ConnectionStatus, FeedEntry } from "@/lib/feed/types";
-import type { Split } from "@/lib/feed/types";
+import type { ConnectionStatus, FeedEntry, RaceCategory } from "@/lib/feed/types";
 
 import type { ArcConfig } from "../content";
 
@@ -23,8 +22,8 @@ export interface SurfaceInputs {
     status: ConnectionStatus;
     /** performance.now() timestamp when the newest unique entry first appeared; 0 if none yet. */
     lastArrivalMs: number;
-    /** Split of the athlete whose arrival set lastArrivalMs; null if none yet. */
-    lastArrivalSplit: Split | null;
+    /** Category of the athlete whose arrival set lastArrivalMs; null if none yet. */
+    lastArrivalCategory: RaceCategory | null;
   };
   /** `direction` is the count direction (-1 while a pre-race countdown is running). */
   clock: { ms: number; running: boolean; direction: 1 | -1 };

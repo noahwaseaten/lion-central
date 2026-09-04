@@ -23,22 +23,22 @@ export function useArcInputs(): SurfaceInputs {
   const online = useOnlineStatus();
   const { entries, status } = useFeed({
     file: settings.file,
-    thresholds: settings.thresholds,
+    offsets: settings.offsets,
     pollingMs: settings.pollingMs,
     useFallbackAlways: settings.useFallbackAlways,
     online,
   });
   const { elapsed, running, direction } = useRaceClock();
-  const { lastArrivalMs, lastArrivalSplit } = useLastArrival(entries);
+  const { lastArrivalMs, lastArrivalCategory } = useLastArrival(entries);
   const { announcement } = useAnnouncement();
 
   return useMemo<SurfaceInputs>(
     () => ({
       config,
-      feed: { entries, status, lastArrivalMs, lastArrivalSplit },
+      feed: { entries, status, lastArrivalMs, lastArrivalCategory },
       clock: { ms: elapsed, running, direction },
       announcement,
     }),
-    [config, entries, status, lastArrivalMs, lastArrivalSplit, elapsed, running, direction, announcement],
+    [config, entries, status, lastArrivalMs, lastArrivalCategory, elapsed, running, direction, announcement],
   );
 }
