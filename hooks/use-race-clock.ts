@@ -26,22 +26,32 @@ const DEFAULT: ClockState = {
 };
 
 /**
- * Operator-driven race clock, persisted to localStorage. Elapsed is computed
- * during render from timestamps so it stays correct across refreshes and tab
- * throttling; a lightweight ticker only nudges re-renders while running.
+ * Operator-driven race clock, persisted to localStorage and pushed to the
+ * server so every connected machine — other tabs, a tunneled `/output/clock`,
+ * an OBS browser source — shares one clock. Elapsed is computed during render
+ * from timestamps so it stays correct across refreshes and tab throttling; a
+ * lightweight ticker only nudges re-renders while running.
  *
  * Supports a pre-race countdown: `startCountdown(ms)` counts down to zero, then
  * auto-continues as a normal count-up elapsed clock from zero — no operator
  * action needed at the moment the race actually starts.
+ *
+ * Pushes to the server happen only from the setters below (a deliberate
+ * operator/local action), never from a generic "state changed" effect — that
+ * would also fire right after mount hydration, when `state` is still
+ * `DEFAULT` on a machine with no local cache, and reset everyone's clock.
  */
 export function useRaceClock() {
   const [state, setState] = useState<ClockState>(DEFAULT);
   const [nowMs, setNowMs] = useState(0);
   const [loaded, setLoaded] = useState(false);
-  // Set right before applying a server-pushed update, so the write-back effect
-  // below can tell "I just received this" apart from "the operator changed
-  // this locally" and skip re-pushing it (which would otherwise ping-pong).
-  const suppressPushRef = useRef(false);
+  // Mirrors `state` for callbacks that need the latest value without depending
+  // on it (and without reading/writing state inside a setState updater, which
+  // React may invoke twice in dev/StrictMode).
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  });
 
   // One-time hydrate from localStorage after mount (SSR-safe).
   useEffect(() => {
@@ -56,6 +66,8 @@ export function useRaceClock() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
+  // Cache locally whenever state changes (including server-pushed updates), for
+  // fast same-tab reloads and as an offline fallback. Never pushes — see setters.
   useEffect(() => {
     if (!loaded) return;
     try {
@@ -63,11 +75,6 @@ export function useRaceClock() {
     } catch {
       // ignore
     }
-    if (suppressPushRef.current) {
-      suppressPushRef.current = false;
-      return;
-    }
-    void pushLive("clock", state);
   }, [state, loaded]);
 
   // Keep every other client — other tabs, and (via the server) other machines
@@ -76,7 +83,6 @@ export function useRaceClock() {
   useEffect(() => {
     return subscribeLive((live) => {
       if (!live.clock) return;
-      suppressPushRef.current = true;
       setState({ ...DEFAULT, ...(live.clock as Partial<ClockState>) });
       setNowMs(Date.now());
     });
@@ -102,59 +108,64 @@ export function useRaceClock() {
   // zero, with no operator action needed at the actual start of the race.
   useEffect(() => {
     if (state.mode !== "countdown" || !state.running || displayMs > 0) return;
+    const next: ClockState = { mode: "elapsed", startedAtMs: Date.now(), accumulatedMs: 0, running: true, countdownFromMs: 0 };
     /* eslint-disable-next-line react-hooks/set-state-in-effect -- reacts to the clock crossing zero, not a derived value */
-    setState({ mode: "elapsed", startedAtMs: Date.now(), accumulatedMs: 0, running: true, countdownFromMs: 0 });
+    setState(next);
+    void pushLive("clock", next);
   }, [state.mode, state.running, displayMs]);
 
-  const start = useCallback(
-    () =>
-      setState((s) =>
-        s.running ? s : { ...s, running: true, startedAtMs: Date.now() },
-      ),
-    [],
-  );
+  const start = useCallback(() => {
+    const s = stateRef.current;
+    if (s.running) return;
+    const next: ClockState = { ...s, running: true, startedAtMs: Date.now() };
+    setState(next);
+    void pushLive("clock", next);
+  }, []);
 
-  const pause = useCallback(
-    () =>
-      setState((s) =>
-        s.running && s.startedAtMs != null
-          ? {
-              ...s,
-              startedAtMs: null,
-              accumulatedMs: s.accumulatedMs + (Date.now() - s.startedAtMs),
-              running: false,
-            }
-          : s,
-      ),
-    [],
-  );
+  const pause = useCallback(() => {
+    const s = stateRef.current;
+    if (!s.running || s.startedAtMs == null) return;
+    const next: ClockState = {
+      ...s,
+      startedAtMs: null,
+      accumulatedMs: s.accumulatedMs + (Date.now() - s.startedAtMs),
+      running: false,
+    };
+    setState(next);
+    void pushLive("clock", next);
+  }, []);
 
-  const reset = useCallback(() => setState({ ...DEFAULT }), []);
+  const reset = useCallback(() => {
+    const next: ClockState = { ...DEFAULT };
+    setState(next);
+    void pushLive("clock", next);
+  }, []);
 
-  const setElapsedMs = useCallback(
-    (ms: number) =>
-      setState((s) => ({
-        mode: "elapsed",
-        startedAtMs: s.running ? Date.now() : null,
-        accumulatedMs: Math.max(0, ms),
-        running: s.running,
-        countdownFromMs: 0,
-      })),
-    [],
-  );
+  const setElapsedMs = useCallback((ms: number) => {
+    const s = stateRef.current;
+    const next: ClockState = {
+      mode: "elapsed",
+      startedAtMs: s.running ? Date.now() : null,
+      accumulatedMs: Math.max(0, ms),
+      running: s.running,
+      countdownFromMs: 0,
+    };
+    setState(next);
+    void pushLive("clock", next);
+  }, []);
 
   /** Start a pre-race countdown from `ms` down to zero. */
-  const startCountdown = useCallback(
-    (ms: number) =>
-      setState({
-        mode: "countdown",
-        startedAtMs: Date.now(),
-        accumulatedMs: 0,
-        running: true,
-        countdownFromMs: Math.max(0, ms),
-      }),
-    [],
-  );
+  const startCountdown = useCallback((ms: number) => {
+    const next: ClockState = {
+      mode: "countdown",
+      startedAtMs: Date.now(),
+      accumulatedMs: 0,
+      running: true,
+      countdownFromMs: Math.max(0, ms),
+    };
+    setState(next);
+    void pushLive("clock", next);
+  }, []);
 
   return {
     elapsed: displayMs,

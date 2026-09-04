@@ -25,13 +25,21 @@ const DEFAULTS: FeedSettings = {
   useFallbackAlways: false,
 };
 
-/** Feed settings — cached in localStorage, synced across machines via the server. */
+/**
+ * Feed settings — cached in localStorage, pushed to the server so every
+ * connected machine shares them. The push happens only from `update()` (a
+ * deliberate operator action), never from a generic "settings changed"
+ * effect — that would also fire right after mount hydration, when `settings`
+ * is still `DEFAULTS` on a machine with no local cache, and reset everyone's
+ * chosen feed file/thresholds.
+ */
 export function useFeedSettings() {
   const [settings, setSettings] = useState<FeedSettings>(DEFAULTS);
   const [loaded, setLoaded] = useState(false);
-  // Set right before applying a server-pushed update, so the write-back effect
-  // below can skip re-pushing it and avoid a ping-pong with the server.
-  const suppressPushRef = useRef(false);
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  });
 
   // One-time hydrate from localStorage after mount (SSR-safe).
   useEffect(() => {
@@ -53,6 +61,8 @@ export function useFeedSettings() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
+  // Cache locally whenever settings change (including server-pushed updates),
+  // for fast same-tab reloads and as an offline fallback. Never pushes.
   useEffect(() => {
     if (!loaded) return;
     try {
@@ -60,11 +70,6 @@ export function useFeedSettings() {
     } catch {
       // ignore quota / privacy mode
     }
-    if (suppressPushRef.current) {
-      suppressPushRef.current = false;
-      return;
-    }
-    void pushLive("feedSettings", settings);
   }, [settings, loaded]);
 
   // Keep every other client — other tabs, and (via the server) other machines
@@ -74,7 +79,6 @@ export function useFeedSettings() {
     return subscribeLive((live) => {
       if (!live.feedSettings) return;
       const parsed = live.feedSettings as Partial<FeedSettings>;
-      suppressPushRef.current = true;
       setSettings({
         ...DEFAULTS,
         ...parsed,
@@ -108,10 +112,11 @@ export function useFeedSettings() {
     };
   }, [loaded, settings.file]);
 
-  const update = useCallback(
-    (patch: Partial<FeedSettings>) => setSettings((s) => ({ ...s, ...patch })),
-    [],
-  );
+  const update = useCallback((patch: Partial<FeedSettings>) => {
+    const next = { ...settingsRef.current, ...patch };
+    setSettings(next);
+    void pushLive("feedSettings", next);
+  }, []);
 
   return { settings, update, loaded };
 }

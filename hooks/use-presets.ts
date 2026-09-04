@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { type ArcConfig, newId } from "@/lib/arc/layout-model";
 import type { Preset } from "@/lib/arc/presets";
@@ -77,10 +77,20 @@ function copyName(base: string, existingNames: string[]): string {
  * as new (replacing one of the same name) or update an existing preset in
  * place by id — the workspace uses `update` to sync the preset it currently
  * has applied without needing to retype its name.
+ *
+ * `persist()` is only ever called from the mutators below (a deliberate
+ * operator action), never from a generic "list changed" effect — that would
+ * also fire right after the initial load, and `load()` returns `[]` on *any*
+ * failure (a dropped tunnel connection, a momentary server hiccup), which
+ * would otherwise get written straight back to disk and permanently wipe
+ * every saved preset.
  */
 export function usePresets() {
   const [custom, setCustom] = useState<Preset[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const customRef = useRef(custom);
+  useEffect(() => {
+    customRef.current = custom;
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -91,50 +101,48 @@ export function usePresets() {
       // so a later "delete everything" doesn't get mistaken for pending migration.
       const legacy = takeLegacyPresets();
       setCustom(presets.length > 0 ? presets : (legacy ?? presets));
-      setLoaded(true);
     });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  useEffect(() => {
-    if (!loaded) return;
-    persist(custom);
-  }, [custom, loaded]);
-
   /** Save as a new preset (or replace one of the same name); returns its id. */
   const save = useCallback((name: string, config: ArcConfig): string | null => {
     const trimmed = name.trim();
     if (!trimmed) return null;
     const id = newId();
-    setCustom((list) => {
-      const without = list.filter((p) => p.name.toLowerCase() !== trimmed.toLowerCase());
-      return [...without, { id, name: trimmed, config: clone(config) }];
-    });
+    const without = customRef.current.filter((p) => p.name.toLowerCase() !== trimmed.toLowerCase());
+    const next = [...without, { id, name: trimmed, config: clone(config) }];
+    setCustom(next);
+    persist(next);
     return id;
   }, []);
 
   /** Update an existing preset's layout in place, keeping its id and name. */
   const update = useCallback((id: string, config: ArcConfig) => {
-    setCustom((list) => list.map((p) => (p.id === id ? { ...p, config: clone(config) } : p)));
+    const next = customRef.current.map((p) => (p.id === id ? { ...p, config: clone(config) } : p));
+    setCustom(next);
+    persist(next);
   }, []);
 
   /** Copy a preset under a new name ("<name> copy"); returns the new preset's id. */
-  const duplicate = useCallback(
-    (id: string): string | null => {
-      const source = custom.find((p) => p.id === id);
-      if (!source) return null;
-      const newPresetId = newId();
-      const name = copyName(source.name, custom.map((p) => p.name));
-      setCustom((list) => [...list, { id: newPresetId, name, config: clone(source.config) }]);
-      return newPresetId;
-    },
-    [custom],
-  );
+  const duplicate = useCallback((id: string): string | null => {
+    const list = customRef.current;
+    const source = list.find((p) => p.id === id);
+    if (!source) return null;
+    const newPresetId = newId();
+    const name = copyName(source.name, list.map((p) => p.name));
+    const next = [...list, { id: newPresetId, name, config: clone(source.config) }];
+    setCustom(next);
+    persist(next);
+    return newPresetId;
+  }, []);
 
   const remove = useCallback((id: string) => {
-    setCustom((list) => list.filter((p) => p.id !== id));
+    const next = customRef.current.filter((p) => p.id !== id);
+    setCustom(next);
+    persist(next);
   }, []);
 
   return { custom, save, update, duplicate, remove };

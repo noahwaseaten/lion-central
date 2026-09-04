@@ -18,11 +18,6 @@ export async function GET(request: Request) {
       let heartbeat: ReturnType<typeof setInterval> | null = null;
       let unsubscribe: (() => void) | null = null;
 
-      const send = (event: string, data: unknown) => {
-        if (closed) return;
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
-      };
-
       const cleanup = () => {
         if (closed) return;
         closed = true;
@@ -35,12 +30,32 @@ export async function GET(request: Request) {
         }
       };
 
+      // A dropped/half-open connection (routine over a flaky tunnel) can make
+      // `enqueue` throw. This broadcasts to every subscriber from one shared
+      // emitter, so one dead connection throwing here must never propagate —
+      // it would both skip every listener queued after it in that emit and,
+      // from inside the heartbeat's setInterval, crash the whole dev server.
+      const send = (event: string, data: unknown) => {
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          cleanup();
+        }
+      };
+
       send("snapshot", getLiveState());
-      unsubscribe = subscribeLiveState((state) => send("snapshot", state));
+      if (!closed) {
+        unsubscribe = subscribeLiveState((state) => send("snapshot", state));
+      }
 
       heartbeat = setInterval(() => {
         if (closed) return;
-        controller.enqueue(encoder.encode(`: ping\n\n`));
+        try {
+          controller.enqueue(encoder.encode(`: ping\n\n`));
+        } catch {
+          cleanup();
+        }
       }, 15_000);
 
       request.signal.addEventListener("abort", cleanup);

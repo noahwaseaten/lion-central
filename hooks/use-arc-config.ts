@@ -160,6 +160,9 @@ export function useArcConfig(mode: "live" | "draft" = "live") {
       void (async () => {
         const snapshot = await fetchLiveSnapshot();
         if (cancelled || !snapshot.arc) return;
+        // This is the baseline loading in, not an edit — don't let the
+        // write-back effect below mark the draft dirty for it.
+        skipDirtyRef.current = true;
         setConfig(migrate(snapshot.arc));
       })();
       return () => {

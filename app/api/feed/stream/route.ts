@@ -35,11 +35,18 @@ export async function GET(request: Request) {
       let watcher: FSWatcher | null = null;
       let heartbeat: ReturnType<typeof setInterval> | null = null;
 
+      // A dropped/half-open connection (routine over a flaky tunnel) can make
+      // `enqueue` throw; left uncaught inside the heartbeat's setInterval that
+      // would crash the whole dev server, so it must always be caught here.
       const send = (event: string, data: unknown) => {
         if (closed) return;
-        controller.enqueue(
-          encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
-        );
+        try {
+          controller.enqueue(
+            encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+          );
+        } catch {
+          cleanup();
+        }
       };
 
       const push = async () => {
@@ -78,7 +85,11 @@ export async function GET(request: Request) {
 
       heartbeat = setInterval(() => {
         if (closed) return;
-        controller.enqueue(encoder.encode(`: ping\n\n`));
+        try {
+          controller.enqueue(encoder.encode(`: ping\n\n`));
+        } catch {
+          cleanup();
+        }
       }, 15_000);
 
       request.signal.addEventListener("abort", cleanup);
