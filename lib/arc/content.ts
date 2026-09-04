@@ -1,3 +1,5 @@
+import { sanitizeFontFamily } from "./fonts-shared";
+
 /** Object-fit behaviour for image/video components. */
 export type Fit = "contain" | "cover";
 
@@ -49,6 +51,21 @@ export function defaultTransform(): ImageTransform {
  * placed component, so the same content shows on the 2D workspace stage and on
  * the physical output.
  */
+/**
+ * Which typeface a text component renders in. "system" is the app's own
+ * built-in font; "google" loads a family from Google Fonts by name at
+ * render time; "custom" uses an operator-uploaded font file (served from the
+ * local font store, see `fonts-store.ts`).
+ */
+export type FontChoice =
+  | { source: "system" }
+  | { source: "google"; family: string }
+  | { source: "custom"; family: string; url: string };
+
+export function defaultFont(): FontChoice {
+  return { source: "system" };
+}
+
 /** Operator-set conditions icon — kept to a small, unambiguous set. */
 export type WeatherCondition = "sunny" | "cloudy" | "rain" | "wind";
 
@@ -62,7 +79,7 @@ export const WEATHER_CONDITIONS: { value: WeatherCondition; label: string }[] = 
 export type ZoneContent =
   | { type: "feed" }
   | { type: "clock"; numberFlow: boolean }
-  | { type: "text"; title: string; subtitle?: string }
+  | { type: "text"; title: string; subtitle?: string; font: FontChoice; size: number; letterSpacing: number }
   | {
       type: "sponsors";
       /** Per-logo source + crop transform; array order = grid / rotate order. */
@@ -112,7 +129,7 @@ export function defaultContent(type: ContentType): ZoneContent {
     case "clock":
       return { type: "clock", numberFlow: false };
     case "text":
-      return { type: "text", title: "Title", subtitle: "" };
+      return { type: "text", title: "Title", subtitle: "", font: defaultFont(), size: 1, letterSpacing: 0 };
     case "sponsors":
       return {
         type: "sponsors",
@@ -158,6 +175,21 @@ function normalizeShadow(raw: unknown): ImageShadow {
   };
 }
 
+/** Coerce loose data into a complete FontChoice, back-filling missing/invalid fields. */
+function normalizeFont(raw: unknown): FontChoice {
+  if (!raw || typeof raw !== "object") return defaultFont();
+  const f = raw as Record<string, unknown>;
+  if (f.source === "google" && typeof f.family === "string") {
+    const family = sanitizeFontFamily(f.family);
+    if (family) return { source: "google", family };
+  }
+  if (f.source === "custom" && typeof f.family === "string" && typeof f.url === "string") {
+    const family = sanitizeFontFamily(f.family);
+    if (family && f.url) return { source: "custom", family, url: f.url };
+  }
+  return defaultFont();
+}
+
 /** Coerce loose data into a complete ImageTransform, back-filling missing fields. */
 function normalizeTransform(raw: Record<string, unknown>): ImageTransform {
   const off = (raw.offset ?? {}) as Record<string, unknown>;
@@ -195,6 +227,9 @@ export function normalizeContent(raw: unknown): ZoneContent {
         type: "text",
         title: typeof c.title === "string" ? c.title : "Title",
         subtitle: typeof c.subtitle === "string" ? c.subtitle : "",
+        font: normalizeFont(c.font),
+        size: clamp(num(c.size, 1), 0.3, 3),
+        letterSpacing: clamp(num(c.letterSpacing, 0), -0.1, 0.5),
       };
     case "sponsors": {
       // Accept new `items` or legacy `images: string[]`; both produce SponsorItem[].

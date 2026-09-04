@@ -9,6 +9,7 @@ import { getImage, getVideo } from "./assets";
 import { rasterSourceFor } from "./raster";
 import { paintBackgroundSlice } from "./background";
 import { tickerRows, type TickerRow } from "./feed-anim";
+import { resolveFont } from "./fonts";
 import type { SurfaceInputs } from "./inputs";
 import { sponsorColumns, sponsorGrid } from "./sponsor-layout";
 
@@ -297,21 +298,33 @@ function paintText(
   h: number,
   content: Extract<ZoneContent, { type: "text" }>,
 ): void {
+  const fontFamily = resolveFont(content.font);
   const hasSub = !!content.subtitle?.trim();
-  const titlePx = fitFont(ctx, content.title || " ", w * 0.92, hasSub ? h * 0.5 : h * 0.6, "800");
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+
+  // Letter-spacing widens the text fitFont measures, so seed it with the
+  // spacing at the max allowed size before fitting — a safe upper bound that
+  // never lets the final (equal-or-smaller) spacing overflow the box.
+  const maxTitlePx = hasSub ? h * 0.5 : h * 0.6;
+  ctx.letterSpacing = `${(content.letterSpacing * maxTitlePx).toFixed(2)}px`;
+  const titlePx = fitFont(ctx, content.title || " ", w * 0.92, maxTitlePx, "800", fontFamily) * content.size;
   ctx.fillStyle = "#0a0a0a";
-  ctx.font = `800 ${titlePx}px ${FONT}`;
+  ctx.font = `800 ${titlePx}px ${fontFamily}`;
+  ctx.letterSpacing = `${(content.letterSpacing * titlePx).toFixed(2)}px`;
   const ty = hasSub ? h * 0.4 : h * 0.5;
   ctx.fillText(content.title, w / 2, ty);
 
   if (hasSub) {
-    const subPx = fitFont(ctx, content.subtitle!, w * 0.86, h * 0.3, "500");
-    ctx.font = `500 ${subPx}px ${FONT}`;
+    const maxSubPx = h * 0.3;
+    ctx.letterSpacing = `${(content.letterSpacing * maxSubPx).toFixed(2)}px`;
+    const subPx = fitFont(ctx, content.subtitle!, w * 0.86, maxSubPx, "500", fontFamily) * content.size;
+    ctx.font = `500 ${subPx}px ${fontFamily}`;
+    ctx.letterSpacing = `${(content.letterSpacing * subPx).toFixed(2)}px`;
     ctx.fillStyle = "#52525b";
     ctx.fillText(content.subtitle!, w / 2, h * 0.74);
   }
+  ctx.letterSpacing = "0px";
 }
 
 /** Emoji glyphs — simplest way to render an "icon" onto a plain 2D canvas, no asset/font loading needed. */
@@ -627,10 +640,11 @@ export function fitFont(
   maxW: number,
   maxPx: number,
   weight: string,
+  fontFamily: string = FONT,
 ): number {
   let px = Math.floor(maxPx);
   do {
-    ctx.font = `${weight} ${px}px ${FONT}`;
+    ctx.font = `${weight} ${px}px ${fontFamily}`;
     if (ctx.measureText(text).width <= maxW) break;
     px -= 2;
   } while (px > 8);

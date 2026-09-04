@@ -1,13 +1,14 @@
 "use client";
 
-import { ArrowDown, ArrowUp, X } from "@phosphor-icons/react";
-import { useState } from "react";
+import { ArrowDown, ArrowUp, UploadSimple, X } from "@phosphor-icons/react";
+import { useRef, useState } from "react";
 
 import { AssetThumb } from "@/components/control/asset-thumb";
 import { ImageCropEditor } from "@/components/control/image-crop-editor";
 import { MediaLibraryTrigger } from "@/components/control/media-library";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useFontLibrary } from "@/hooks/use-font-library";
 import { assetDisplayName } from "@/lib/arc/assets-shared";
 import {
   applyFramingToAll,
@@ -18,12 +19,14 @@ import {
 import {
   defaultTransform,
   type Fit,
-  type ImageTransform,
+  type FontChoice,
   type SponsorItem,
+  type ImageTransform,
   WEATHER_CONDITIONS,
   type WeatherCondition,
   type ZoneContent,
 } from "@/lib/arc/content";
+import { GOOGLE_FONTS } from "@/lib/arc/fonts-shared";
 import { cn } from "@/lib/utils";
 
 const inputCls =
@@ -120,7 +123,150 @@ function TextFields({
           onChange={(e) => onChange({ ...content, subtitle: e.target.value })}
         />
       </Field>
+      <FontField font={content.font} onChange={(font) => onChange({ ...content, font })} />
+      <SizeSlider value={content.size} onChange={(size) => onChange({ ...content, size })} />
+      <SpacingSlider value={content.letterSpacing} onChange={(letterSpacing) => onChange({ ...content, letterSpacing })} />
     </div>
+  );
+}
+
+/** Font source + name/upload, shared by any text component. */
+function FontField({ font, onChange }: { font: FontChoice; onChange: (next: FontChoice) => void }) {
+  const { fonts, upload, error } = useFontLibrary();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const saved = await upload(file);
+      if (saved) onChange({ source: "custom", family: saved.family, url: saved.url });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={labelCls}>Font</span>
+      <select
+        className={inputCls}
+        value={font.source}
+        onChange={(e) => {
+          const source = e.target.value as FontChoice["source"];
+          if (source === "system") onChange({ source: "system" });
+          else if (source === "google") onChange({ source: "google", family: font.source === "google" ? font.family : "" });
+          else onChange({ source: "custom", family: "", url: "" });
+        }}
+      >
+        <option value="system">Default</option>
+        <option value="google">Google Fonts</option>
+        <option value="custom">Custom upload</option>
+      </select>
+
+      {font.source === "google" && (
+        <>
+          <input
+            list="google-fonts-suggestions"
+            className={inputCls}
+            value={font.family}
+            placeholder="e.g. Bebas Neue"
+            onChange={(e) => onChange({ source: "google", family: e.target.value })}
+          />
+          <datalist id="google-fonts-suggestions">
+            {GOOGLE_FONTS.map((f) => (
+              <option key={f} value={f} />
+            ))}
+          </datalist>
+        </>
+      )}
+
+      {font.source === "custom" && (
+        <div className="flex flex-col gap-1.5">
+          {fonts.length > 0 && (
+            <select
+              className={inputCls}
+              value={font.url}
+              onChange={(e) => {
+                const picked = fonts.find((f) => f.url === e.target.value);
+                if (picked) onChange({ source: "custom", family: picked.family, url: picked.url });
+              }}
+            >
+              <option value="" disabled>
+                Choose an uploaded font…
+              </option>
+              {fonts.map((f) => (
+                <option key={f.id} value={f.url}>
+                  {f.family}
+                </option>
+              ))}
+            </select>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".otf,.ttf,.woff,.woff2"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleUpload(file);
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+          >
+            <UploadSimple />
+            {uploading ? "Uploading…" : "Upload font (.otf/.ttf/.woff)"}
+          </Button>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SizeSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+        Text size
+        <span className="tabular-nums text-foreground">{Math.round(value * 100)}%</span>
+      </span>
+      <input
+        type="range"
+        min={40}
+        max={200}
+        step={5}
+        value={Math.round(value * 100)}
+        onChange={(e) => onChange(Number(e.target.value) / 100)}
+        className="w-full accent-signal"
+      />
+    </label>
+  );
+}
+
+function SpacingSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+        Letter spacing
+        <span className="tabular-nums text-foreground">{value >= 0 ? "+" : ""}{Math.round(value * 100)}</span>
+      </span>
+      <input
+        type="range"
+        min={-10}
+        max={50}
+        step={1}
+        value={Math.round(value * 100)}
+        onChange={(e) => onChange(Number(e.target.value) / 100)}
+        className="w-full accent-signal"
+      />
+    </label>
   );
 }
 

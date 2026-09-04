@@ -45,6 +45,64 @@ describe("normalizeContent — sponsors items", () => {
   });
 });
 
+describe("normalizeContent — text", () => {
+  it("back-fills font, size, and letterSpacing on legacy content with none of those fields", () => {
+    const out = normalizeContent({ type: "text", title: "Hi", subtitle: "there" });
+    expect(out).toEqual({
+      type: "text",
+      title: "Hi",
+      subtitle: "there",
+      font: { source: "system" },
+      size: 1,
+      letterSpacing: 0,
+    });
+  });
+
+  it("clamps letterSpacing to a sane range", () => {
+    expect((normalizeContent({ type: "text", title: "Hi", letterSpacing: 5 }) as { letterSpacing: number }).letterSpacing).toBe(0.5);
+    expect((normalizeContent({ type: "text", title: "Hi", letterSpacing: -5 }) as { letterSpacing: number }).letterSpacing).toBe(-0.1);
+  });
+
+  it("keeps a valid google font choice", () => {
+    const out = normalizeContent({ type: "text", title: "Hi", font: { source: "google", family: "Bebas Neue" } });
+    if (out.type !== "text") return;
+    expect(out.font).toEqual({ source: "google", family: "Bebas Neue" });
+  });
+
+  it("keeps a valid custom font choice", () => {
+    const out = normalizeContent({
+      type: "text",
+      title: "Hi",
+      font: { source: "custom", family: "Ristretto Slab Pro", url: "/api/fonts/abc.otf" },
+    });
+    if (out.type !== "text") return;
+    expect(out.font).toEqual({ source: "custom", family: "Ristretto Slab Pro", url: "/api/fonts/abc.otf" });
+  });
+
+  it("strips quotes/backslashes from a font family so it can't break out of the CSS shorthand", () => {
+    const out = normalizeContent({ type: "text", title: "Hi", font: { source: "google", family: 'evil"; } * { color: red' } });
+    if (out.type !== "text") return;
+    expect(out.font.source).toBe("google");
+    if (out.font.source !== "google") return;
+    expect(out.font.family).not.toMatch(/["'\\]/);
+  });
+
+  it("falls back to system font for an incomplete or garbage font choice", () => {
+    expect((normalizeContent({ type: "text", title: "Hi", font: { source: "google" } }) as { font: unknown }).font).toEqual({
+      source: "system",
+    });
+    expect((normalizeContent({ type: "text", title: "Hi", font: "nope" }) as { font: unknown }).font).toEqual({
+      source: "system",
+    });
+  });
+
+  it("clamps size to a sane range", () => {
+    expect((normalizeContent({ type: "text", title: "Hi", size: 50 }) as { size: number }).size).toBe(3);
+    expect((normalizeContent({ type: "text", title: "Hi", size: -5 }) as { size: number }).size).toBe(0.3);
+    expect((normalizeContent({ type: "text", title: "Hi", size: "big" }) as { size: number }).size).toBe(1);
+  });
+});
+
 describe("normalizeContent — qr", () => {
   it("returns default label when label is missing", () => {
     const out = normalizeContent({ type: "qr", url: "https://results.example.com" });
