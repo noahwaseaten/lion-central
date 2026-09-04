@@ -27,6 +27,18 @@ function load(): Preset[] {
 
 const clone = (c: ArcConfig): ArcConfig => JSON.parse(JSON.stringify(c)) as ArcConfig;
 
+/** "Race Day" → "Race Day copy", or "Race Day copy 2", "copy 3", … if those are already taken. */
+function copyName(base: string, existingNames: string[]): string {
+  const taken = new Set(existingNames.map((n) => n.toLowerCase()));
+  let candidate = `${base} copy`;
+  let n = 2;
+  while (taken.has(candidate.toLowerCase())) {
+    candidate = `${base} copy ${n}`;
+    n += 1;
+  }
+  return candidate;
+}
+
 /**
  * Saved layouts (full-layout snapshots), persisted to localStorage. Save as
  * new (replacing one of the same name) or update an existing preset in place
@@ -77,9 +89,22 @@ export function usePresets() {
     setCustom((list) => list.map((p) => (p.id === id ? { ...p, config: clone(config) } : p)));
   }, []);
 
+  /** Copy a preset under a new name ("<name> copy"); returns the new preset's id. */
+  const duplicate = useCallback(
+    (id: string): string | null => {
+      const source = custom.find((p) => p.id === id);
+      if (!source) return null;
+      const newPresetId = newId();
+      const name = copyName(source.name, custom.map((p) => p.name));
+      setCustom((list) => [...list, { id: newPresetId, name, config: clone(source.config) }]);
+      return newPresetId;
+    },
+    [custom],
+  );
+
   const remove = useCallback((id: string) => {
     setCustom((list) => list.filter((p) => p.id !== id));
   }, []);
 
-  return { custom, save, update, remove };
+  return { custom, save, update, duplicate, remove };
 }

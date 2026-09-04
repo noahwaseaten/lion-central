@@ -13,7 +13,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { usePresets } from "@/hooks/use-presets";
 import { useRaceClock } from "@/hooks/use-race-clock";
 import { type ContentType, defaultContent, type ZoneContent } from "@/lib/arc/content";
-import type { NormRect, Selection } from "@/lib/arc/layout-model";
+import type { ArcComponent, NormRect, Selection } from "@/lib/arc/layout-model";
 import type { Preset } from "@/lib/arc/presets";
 import type { SurfaceInputs } from "@/lib/arc/render/inputs";
 import type { SurfaceId } from "@/lib/arc/surfaces";
@@ -54,7 +54,7 @@ export function ArcWorkspace() {
     canUndo,
     canRedo,
   } = useArcConfig("draft");
-  const { custom, save, update: updatePreset, remove } = usePresets();
+  const { custom, save, update: updatePreset, duplicate: duplicatePreset, remove } = usePresets();
   // The preset (if any) currently applied to the draft — tracked so "Update"
   // can re-save it in place without the operator retyping its name.
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
@@ -173,6 +173,18 @@ export function ArcWorkspace() {
     [config, addComponent],
   );
 
+  // Pull one component from a saved preset's config straight onto the current
+  // draft's `surface` — reads the preset in place rather than applying it, so
+  // it never touches (or risks discarding) whatever the operator has open.
+  const copyFromPreset = useCallback(
+    (surface: SurfaceId, component: ArcComponent) => {
+      const clone = structuredClone({ content: component.content, rect: component.rect });
+      const newId = addComponent(surface, clone.content, offsetRect(clone.rect));
+      setSelected({ surface, id: newId });
+    },
+    [addComponent],
+  );
+
   const inputs: SurfaceInputs = {
     config,
     feed: { entries, status, lastArrivalMs, lastArrivalSplit },
@@ -213,6 +225,7 @@ export function ArcWorkspace() {
               setActivePresetId(preset.id);
             },
             onSave: (name) => setActivePresetId(save(name, config)),
+            onDuplicate: (id) => duplicatePreset(id),
             onDelete: (id) => {
               remove(id);
               setActivePresetId((current) => (current === id ? null : current));
@@ -230,10 +243,12 @@ export function ArcWorkspace() {
           <aside className="hidden w-56 shrink-0 border-r border-border bg-card md:block">
             <LayersPanel
               config={config}
+              presets={custom}
               selected={selected}
               onSelect={setSelected}
               addComponent={addAndSelect}
               duplicateComponent={duplicateComponent}
+              copyFromPreset={copyFromPreset}
               removeComponent={(surface, id) => {
                 removeComponent(surface, id);
                 setSelected((s) => (s?.id === id ? null : s));

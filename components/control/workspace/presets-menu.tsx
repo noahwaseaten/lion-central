@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretDown, Check, FloppyDisk, Stack, Trash } from "@phosphor-icons/react";
+import { CaretDown, Check, Copy, FloppyDisk, Stack, Trash } from "@phosphor-icons/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,14 @@ export function PresetsMenu({
   activePresetId,
   onApply,
   onSave,
+  onDuplicate,
   onDelete,
 }: {
   custom: Preset[];
   activePresetId: string | null;
   onApply: (preset: Preset) => void;
   onSave: (name: string) => void;
+  onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
   const [open, setOpenRaw] = useState(false);
@@ -71,6 +73,7 @@ export function PresetsMenu({
                 name={p.name}
                 active={p.id === activePresetId}
                 onApply={() => apply(p)}
+                onDuplicate={() => onDuplicate(p.id)}
                 onDelete={() => onDelete(p.id)}
               />
             ))}
@@ -120,12 +123,14 @@ function ApplyRow({
   name,
   active,
   onApply,
+  onDuplicate,
   onDelete,
 }: {
   name: string;
   active: boolean;
   onApply: () => void;
-  onDelete?: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div className="group flex items-center gap-1">
@@ -137,16 +142,24 @@ function ApplyRow({
         <Check weight="bold" className={active ? "size-3.5 shrink-0 text-foreground" : "size-3.5 shrink-0 opacity-0"} />
         <span className="truncate">{name}</span>
       </button>
-      {onDelete && (
-        <button
-          type="button"
-          aria-label={`Delete ${name}`}
-          onClick={onDelete}
-          className="grid size-7 shrink-0 place-items-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 [&_svg]:size-3.5"
-        >
-          <Trash />
-        </button>
-      )}
+      <button
+        type="button"
+        aria-label={`Duplicate ${name}`}
+        title="Duplicate"
+        onClick={onDuplicate}
+        className="grid size-7 shrink-0 place-items-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 [&_svg]:size-3.5"
+      >
+        <Copy />
+      </button>
+      <button
+        type="button"
+        aria-label={`Delete ${name}`}
+        title="Delete"
+        onClick={onDelete}
+        className="grid size-7 shrink-0 place-items-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-accent hover:text-destructive focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 [&_svg]:size-3.5"
+      >
+        <Trash />
+      </button>
     </div>
   );
 }

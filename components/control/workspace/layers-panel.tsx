@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 
-import { CaretDown, CaretRight, Copy, DotsSixVertical, Plus, Trash } from "@phosphor-icons/react";
+import { CaretDown, CaretRight, Copy, DotsSixVertical, Plus, Stack, Trash } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
+import type { ArcComponent, ArcConfig, Selection } from "@/lib/arc/layout-model";
 import type { ContentType } from "@/lib/arc/content";
-import type { ArcConfig, Selection } from "@/lib/arc/layout-model";
+import type { Preset } from "@/lib/arc/presets";
 import { SURFACES, type SurfaceId } from "@/lib/arc/surfaces";
 import { cn } from "@/lib/utils";
 
 import { AddComponentMenu } from "./add-component-menu";
 import { CONTENT_META } from "./content-meta";
+import { CopyFromPresetMenu } from "./copy-from-preset-menu";
 import { IconActionButton } from "./icon-action-button";
 
 interface DragState {
@@ -29,19 +31,23 @@ interface DragState {
  */
 export function LayersPanel({
   config,
+  presets,
   selected,
   onSelect,
   addComponent,
   duplicateComponent,
+  copyFromPreset,
   removeComponent,
   renameComponent,
   setSurfaceOrder,
 }: {
   config: ArcConfig;
+  presets: Preset[];
   selected: Selection | null;
   onSelect: (sel: Selection) => void;
   addComponent: (surface: SurfaceId, type: ContentType) => void;
   duplicateComponent: (surface: SurfaceId, id: string) => void;
+  copyFromPreset: (surface: SurfaceId, component: ArcComponent) => void;
   removeComponent: (surface: SurfaceId, id: string) => void;
   renameComponent: (surface: SurfaceId, id: string, name: string) => void;
   setSurfaceOrder: (surface: SurfaceId, orderedIds: string[]) => void;
@@ -80,25 +86,46 @@ export function LayersPanel({
                   </span>
                 )}
               </button>
-              <AddComponentMenu
-                align="end"
-                onAdd={(type) => {
-                  setCollapsed((c) => ({ ...c, [surface.id]: false }));
-                  addComponent(surface.id, type);
-                }}
-                trigger={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label={`Add component to ${surface.label}`}
-                    title="Add component"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Plus weight="bold" className="size-3.5" />
-                  </Button>
-                }
-              />
+              <div className="flex items-center">
+                <CopyFromPresetMenu
+                  presets={presets}
+                  onCopy={({ component }) => {
+                    setCollapsed((c) => ({ ...c, [surface.id]: false }));
+                    copyFromPreset(surface.id, component);
+                  }}
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={`Copy a component from a saved layout to ${surface.label}`}
+                      title="Copy from a saved layout"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Stack weight="bold" className="size-3.5" />
+                    </Button>
+                  }
+                />
+                <AddComponentMenu
+                  align="end"
+                  onAdd={(type) => {
+                    setCollapsed((c) => ({ ...c, [surface.id]: false }));
+                    addComponent(surface.id, type);
+                  }}
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={`Add component to ${surface.label}`}
+                      title="Add component"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Plus weight="bold" className="size-3.5" />
+                    </Button>
+                  }
+                />
+              </div>
             </div>
 
             {isOpen &&
