@@ -2,27 +2,58 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { type ArcConfig, migrate, newId } from "@/lib/arc/layout-model";
+import { type ArcConfig, newId } from "@/lib/arc/layout-model";
 import type { Preset } from "@/lib/arc/presets";
 
-const KEY = "lion-central.presets";
-
-function load(): Preset[] {
+async function load(): Promise<Preset[]> {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
+    const res = await fetch("/api/presets", { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { presets?: Preset[] };
+    return Array.isArray(data.presets) ? data.presets : [];
+  } catch {
+    return [];
+  }
+}
+
+const LEGACY_KEY = "lion-central.presets";
+const MIGRATED_KEY = "lion-central.presets.migrated";
+
+/**
+ * One-time pickup of presets saved under the old localStorage-only scheme, so
+ * upgrading this app doesn't strand an operator's existing saved layouts in
+ * their browser. Runs once per browser (tracked by `MIGRATED_KEY`) — after
+ * that, an empty server list means the operator deleted everything, not that
+ * migration is still pending.
+ */
+function takeLegacyPresets(): Preset[] | null {
+  try {
+    if (localStorage.getItem(MIGRATED_KEY)) return null;
+    localStorage.setItem(MIGRATED_KEY, "1");
+    const raw = localStorage.getItem(LEGACY_KEY);
+    if (!raw) return null;
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
     return parsed
       .filter((p): p is { id?: unknown; name?: unknown; config?: unknown } => !!p && typeof p === "object")
       .map((p) => ({
         id: typeof p.id === "string" ? p.id : newId(),
         name: typeof p.name === "string" ? p.name : "Untitled",
-        config: migrate(p.config),
+        config: p.config as ArcConfig,
       }));
   } catch {
-    return [];
+    return null;
   }
+}
+
+function persist(presets: Preset[]): void {
+  fetch("/api/presets", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ presets }),
+  }).catch(() => {
+    // best-effort — the operator's local state is already updated
+  });
 }
 
 const clone = (c: ArcConfig): ArcConfig => JSON.parse(JSON.stringify(c)) as ArcConfig;
@@ -40,37 +71,37 @@ function copyName(base: string, existingNames: string[]): string {
 }
 
 /**
- * Saved layouts (full-layout snapshots), persisted to localStorage. Save as
- * new (replacing one of the same name) or update an existing preset in place
- * by id — the workspace uses `update` to sync the preset it currently has
- * applied without needing to retype its name.
+ * Saved layouts (full-layout snapshots), persisted server-side to a JSON file
+ * on disk (see `lib/arc/presets-store.ts`) rather than localStorage, so they
+ * travel with the repo instead of being stuck in one operator's browser. Save
+ * as new (replacing one of the same name) or update an existing preset in
+ * place by id — the workspace uses `update` to sync the preset it currently
+ * has applied without needing to retype its name.
  */
 export function usePresets() {
   const [custom, setCustom] = useState<Preset[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate persisted presets once
-    setCustom(load());
-    setLoaded(true);
+    let cancelled = false;
+    void load().then((presets) => {
+      if (cancelled) return;
+      // Only fall back to the legacy list when the server has nothing yet —
+      // always calling takeLegacyPresets() marks migration done either way,
+      // so a later "delete everything" doesn't get mistaken for pending migration.
+      const legacy = takeLegacyPresets();
+      setCustom(presets.length > 0 ? presets : (legacy ?? presets));
+      setLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!loaded) return;
-    try {
-      localStorage.setItem(KEY, JSON.stringify(custom));
-    } catch {
-      // ignore quota / privacy mode
-    }
+    persist(custom);
   }, [custom, loaded]);
-
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY) setCustom(load());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
 
   /** Save as a new preset (or replace one of the same name); returns its id. */
   const save = useCallback((name: string, config: ArcConfig): string | null => {

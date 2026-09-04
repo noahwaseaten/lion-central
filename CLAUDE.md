@@ -68,8 +68,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `ArcStage` — pannable/zoomable canvas editor: ⌘/Ctrl-wheel (or pinch) zooms, plain wheel/background-drag/middle-drag/space-drag pans. Each component is a `ComponentFrame` (move + 8-handle resize). Alignment snapping in `lib/arc/snapping.ts`
 - `ZoneInspector` (right rail) — inspector for the selected component; content type switcher + per-type controls + feed/clock settings
 
-### Presets (`lib/arc/presets.ts` + `hooks/use-presets.ts`)
-Full-layout snapshots, applied via `replaceConfig` and persisted to localStorage via `use-presets.ts` — no built-ins, operator-saved only. The workspace tracks which preset (if any) is currently applied; publishing (`ArcWorkspace`'s `onPublish`) re-saves that preset in place by id automatically, so there's no separate "update" step. The Presets menu's own Save box always creates/replaces by name (for renaming or branching off a copy).
+### Presets (`lib/arc/presets.ts` + `lib/arc/presets-store.ts` + `hooks/use-presets.ts`)
+Full-layout snapshots, applied via `replaceConfig` — no built-ins, operator-saved only. Persisted server-side to a JSON file on disk (`PRESETS_DIR` env, else `<cwd>/.lion-presets/presets.json`, served by `app/api/presets/*`) rather than localStorage, so saved layouts travel with the repo (`git pull` gives every clone the same presets) instead of being stuck in one browser. The workspace tracks which preset (if any) is currently applied; publishing (`ArcWorkspace`'s `onPublish`) re-saves that preset in place by id automatically, so there's no separate "update" step. The Presets menu's own Save box always creates/replaces by name (for renaming or branching off a copy).
 
 ### Logo / asset library
 - Server-side storage: `ASSETS_DIR` env (else `<cwd>/.lion-assets`), served by `app/api/assets/*`

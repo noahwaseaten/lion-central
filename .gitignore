@@ -42,9 +42,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# NOTE: .lion-assets/ (logos/media) and .lion-fonts/ (custom fonts) are the
-# LOCAL ONLY asset stores and are deliberately NOT ignored — they're committed
-# so `git pull` gives every machine running this app the same uploaded assets.
+# NOTE: .lion-assets/ (logos/media), .lion-fonts/ (custom fonts), and
+# .lion-presets/ (saved layouts) are the LOCAL ONLY data stores and are
+# deliberately NOT ignored — they're committed so `git pull` gives every
+# machine running this app the same uploaded assets and saved layouts.
 
 # brainstorming visual companion sessions
 .superpowers/
