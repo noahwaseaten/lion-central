@@ -10,8 +10,8 @@
       },
       "surfaceSizes": {
         "clock": {
-          "w": 280,
-          "h": 96
+          "w": 256,
+          "h": 128
         },
         "topbar": {
           "w": 1280,
@@ -289,7 +289,7 @@
                   }
                 },
                 {
-                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "src": "/api/assets/ao7m3622fke7__VELINGRAD-05.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -392,6 +392,23 @@
                 },
                 {
                   "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f6q16hkfl8f3__ICDSOFT-06.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -596,23 +613,6 @@
                     "blur": 12,
                     "opacity": 0.6
                   }
-                },
-                {
-                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
                 }
               ],
               "mode": "grid",
@@ -642,8 +642,8 @@
       },
       "surfaceSizes": {
         "clock": {
-          "w": 280,
-          "h": 96
+          "w": 256,
+          "h": 128
         },
         "topbar": {
           "w": 1280,
@@ -661,7 +661,7 @@
       "surfaces": {
         "clock": [
           {
-            "id": "c_c2955e78_32",
+            "id": "c_b7282214_7",
             "content": {
               "type": "clock",
               "numberFlow": true
@@ -928,7 +928,7 @@
                   }
                 },
                 {
-                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "src": "/api/assets/ao7m3622fke7__VELINGRAD-05.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -1031,6 +1031,23 @@
                 },
                 {
                   "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f6q16hkfl8f3__ICDSOFT-06.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -1235,23 +1252,6 @@
                     "blur": 12,
                     "opacity": 0.6
                   }
-                },
-                {
-                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
                 }
               ],
               "mode": "grid",
@@ -1281,8 +1281,8 @@
       },
       "surfaceSizes": {
         "clock": {
-          "w": 280,
-          "h": 96
+          "w": 256,
+          "h": 128
         },
         "topbar": {
           "w": 1280,
@@ -1396,7 +1396,7 @@
                     "x": 0,
                     "y": 0
                   },
-                  "padding": 0,
+                  "padding": 0.07,
                   "background": null,
                   "shadow": {
                     "enabled": false,
@@ -1443,7 +1443,7 @@
               "w": 0.5812414314091217,
               "h": 0.5,
               "x": 0.21823575941030166,
-              "y": 0
+              "y": 3.729655473350135e-17
             }
           },
           {
@@ -1527,7 +1527,7 @@
                     "x": 0,
                     "y": 0
                   },
-                  "padding": 0,
+                  "padding": 0.07,
                   "background": null,
                   "shadow": {
                     "enabled": false,
@@ -1612,7 +1612,7 @@
                   }
                 },
                 {
-                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "src": "/api/assets/ao7m3622fke7__VELINGRAD-05.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -1715,6 +1715,23 @@
                 },
                 {
                   "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f6q16hkfl8f3__ICDSOFT-06.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -1905,23 +1922,6 @@
                 },
                 {
                   "src": "/api/assets/59kzak3j2rua__ekotoi.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -1955,8 +1955,8 @@
     }
   },
   {
-    "id": "c_cfb67115_8",
-    "name": "test",
+    "id": "c_ebb7f541_7",
+    "name": "WINNER",
     "config": {
       "background": {
         "mode": "video",
@@ -1965,8 +1965,8 @@
       },
       "surfaceSizes": {
         "clock": {
-          "w": 280,
-          "h": 96
+          "w": 256,
+          "h": 128
         },
         "topbar": {
           "w": 1280,
@@ -1999,122 +1999,36 @@
         ],
         "topbar": [
           {
-            "id": "c_a61c9d7c_2",
-            "name": "Left shoulder",
+            "id": "c_a5a10aab_9",
             "content": {
-              "type": "sponsors",
-              "items": [
-                {
-                  "src": "/api/assets/s51id4oa6uny__pricopy.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/0jr7c6o42rxu__winner.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                }
-              ],
-              "mode": "rotate",
-              "intervalMs": 5000,
-              "columns": "auto",
-              "cellPadding": 0.12
+              "type": "text",
+              "title": "WINNER",
+              "subtitle": "",
+              "font": {
+                "source": "system"
+              },
+              "size": 1,
+              "letterSpacing": 0.1
             },
             "rect": {
-              "w": 0.20944507671556228,
+              "w": 0.4471922627567074,
               "h": 1,
-              "x": 0,
+              "x": 0.2764038686216463,
               "y": 0
             }
           },
           {
-            "id": "c_85295b4b_31",
-            "name": "Lion Banner",
+            "id": "c_c53afd4d_8",
             "content": {
               "type": "image",
-              "src": "/api/assets/8lkhgfju2ruq__lionbaner.svg",
+              "src": "/api/assets/z08so1ltj9by__LH-LOGO-ULTRA-03.png",
               "fit": "contain",
               "scale": 1,
               "offset": {
                 "x": 0,
                 "y": 0
               },
-              "padding": 0,
+              "padding": 0.06,
               "background": null,
               "shadow": {
                 "enabled": false,
@@ -2124,134 +2038,37 @@
               }
             },
             "rect": {
-              "w": 0.5812414314091217,
-              "h": 0.5,
-              "x": 0.41875856859087834,
-              "y": 0
-            }
-          },
-          {
-            "id": "c_54ba9180_8",
-            "content": {
-              "type": "sponsors",
-              "items": [
-                {
-                  "src": "/api/assets/s51id4oa6uny__pricopy.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/0jr7c6o42rxu__winner.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/uiqxa4jv2rst__alphawin.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0.05,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/ygxhqnr02rwz__sportdepot.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                }
-              ],
-              "mode": "rotate",
-              "intervalMs": 5000,
-              "columns": "auto",
-              "cellPadding": 0.12
-            },
-            "rect": {
-              "w": 0.20944507671556228,
+              "w": 0.2538282040338897,
               "h": 1,
-              "x": 0.7905549232844378,
+              "x": 0,
               "y": 0
             }
           },
           {
-            "id": "c_a5a10aab_9",
+            "id": "c_7546878a_9",
             "content": {
-              "type": "text",
-              "title": "ULTRA CROSS TRIATHLON",
-              "subtitle": "",
-              "font": {
-                "source": "custom",
-                "family": "Ristretto Slab Pro Extra Light",
-                "url": "/api/fonts/a55cm2w17xei.otf"
+              "type": "image",
+              "src": "/api/assets/z08so1ltj9by__LH-LOGO-ULTRA-03.png",
+              "fit": "contain",
+              "scale": 1,
+              "offset": {
+                "x": 0,
+                "y": 0
               },
-              "size": 1,
-              "letterSpacing": 0.07
+              "padding": 0.06,
+              "background": null,
+              "shadow": {
+                "enabled": false,
+                "color": "#000000",
+                "blur": 12,
+                "opacity": 0.6
+              }
             },
             "rect": {
-              "w": 0.49234359193222055,
-              "h": 0.5,
-              "x": 0.25,
-              "y": 0.5
+              "w": 0.2538282040338897,
+              "h": 1,
+              "x": 0.7461717959661103,
+              "y": 0
             }
           }
         ],
@@ -2296,7 +2113,7 @@
                   }
                 },
                 {
-                  "src": "/api/assets/cs8iiksq2rxg__velingrad.svg",
+                  "src": "/api/assets/ao7m3622fke7__VELINGRAD-05.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -2399,6 +2216,23 @@
                 },
                 {
                   "src": "/api/assets/51ja9cdl2ruh__esc.svg",
+                  "fit": "contain",
+                  "scale": 1,
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "padding": 0,
+                  "background": null,
+                  "shadow": {
+                    "enabled": false,
+                    "color": "#000000",
+                    "blur": 12,
+                    "opacity": 0.6
+                  }
+                },
+                {
+                  "src": "/api/assets/f6q16hkfl8f3__ICDSOFT-06.png",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
@@ -2589,23 +2423,6 @@
                 },
                 {
                   "src": "/api/assets/59kzak3j2rua__ekotoi.svg",
-                  "fit": "contain",
-                  "scale": 1,
-                  "offset": {
-                    "x": 0,
-                    "y": 0
-                  },
-                  "padding": 0,
-                  "background": null,
-                  "shadow": {
-                    "enabled": false,
-                    "color": "#000000",
-                    "blur": 12,
-                    "opacity": 0.6
-                  }
-                },
-                {
-                  "src": "/api/assets/us09w9b32rwi__Rectangle.svg",
                   "fit": "contain",
                   "scale": 1,
                   "offset": {
